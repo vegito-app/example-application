@@ -1,40 +1,43 @@
+![Release Version](https://img.shields.io/github/v/release/vegito-app/example-application?sort=semver)
+![CI](https://github.com/vegito-app/example-application/actions/workflows/release.yml/badge.svg?branch=main)
+
 ### Application
 
-#### application-backend
+#### example-application-backend
 
 The _application-backend_ serves an _application-frontend_ web react application.
 
 Start _application-backend_:
 
 ```
-make application-backend-run
+make example-application-backend-run
 ```
 
 Build _application-backend_ image:
 
 ```
-make application-backend-image
+make example-application-backend-image
 ```
 
 Run _application-backend_ docker-compose service container from the _application-backend-image_.
 
 ```
-make application-backend-docker-compose-run
+make example-application-backend-docker-compose-run
 ```
 
 Some other companion Makefile targets in familly `application-backend-*` are also available, see [application/backend/backend.mk](application/backend/backend.mk) for details.
 
-    application-backend-docker-compose-logs
-    application-backend-docker-compose-rm
-    application-backend-docker-compose-run
-    application-backend-docker-compose-stop
-    application-backend-docker-compose-up
-    application-backend-docker-compose-rm
-    application-backend-image
-    application-backend-image-push
-    application-backend-image-push-ci
-    application-backend-install
-    application-backend-run
+    example-application-backend-docker-compose-logs
+    example-application-backend-docker-compose-rm
+    example-application-backend-docker-compose-run
+    example-application-backend-docker-compose-stop
+    example-application-backend-docker-compose-up
+    example-application-backend-docker-compose-rm
+    example-application-backend-image
+    example-application-backend-image-push
+    example-application-backend-image-push-ci
+    example-application-backend-install
+    example-application-backend-run
 
 #### application-frontend
 

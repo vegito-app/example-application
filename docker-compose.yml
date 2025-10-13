@@ -4,7 +4,7 @@ services:
       context: ${PWD}
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    image: ${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-local:application-backend-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-app:example-application-backend-latest}
     env_file:
       - .env
     environment:
@@ -25,12 +25,12 @@ services:
     networks:
       dev:
         aliases:
-          - application-backend
+          - example-application-backend
 
   example-application-mobile:
     cap_add:
       - SYS_ADMIN
-    image: ${LOCAL_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-local:application-mobile-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-app:example-application-mobile-latest}
     env_file:
       - .env
     environment:
@@ -47,4 +47,45 @@ services:
     networks:
       dev:
         aliases:
-          - application-mobile
+          - example-application-mobile
+    working_dir: ${PWD}/mobile
+
+  vegito-tests:
+    image: ${LOCAL_APPLICATION_TESTS_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-local:application-tests-latest}
+    environment:
+      VEGITO_BACKEND_URL_DEBUG: ${VEGITO_BACKEND_URL_DEBUG:-http://example-application-backend:8080}
+      LOCAL_WORKSPACE: ${PWD}
+      LOCAL_APPLICATION_TESTS_DIR: ${VEGITO_APPLICATION_TESTS_DIR:-${PWD}/vegito/tests}
+      STORAGE_EMULATOR_HOST: ${VEGITO_STORAGE_EMULATOR_HOST:-http://firebase-emulators:9199}
+      VEGITO_TESTS_DIR: ${VEGITO_TESTS_DIR:-${PWD}/tests}
+    env_file:
+      - .env
+    volumes:
+      - ${LOCAL_WORKSPACE:-${PWD}}:${PWD}:cached
+    working_dir: ${PWD}
+    command: |
+      bash -c '
+      set -eu
+      sleep infinity
+      '
+
+  trivy:
+    image: aquasec/trivy:latest
+    entrypoint: sh
+    command: |
+      -c '
+      set -eu
+      trivy image --quiet --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --ignorefile /trivy-ignore.txt \
+        --ignore-policy /trivy-ignore-policy.json \
+        --format json \
+        --output /trivy-report.json \
+        --cache-dir /trivy-cache \
+        ${VEGITO_BACKEND_IMAGE_LATEST} && \
+      echo "Trivy scan completed successfully. Reports generated at /trivy-report.txt and /trivy-report.json." || \
+      echo "Trivy scan failed. Check the reports for details." && \
+      echo "Running in sleep mode to keep the container alive for further inspection." && \
+      sleep infinity
+      '
+    volumes:
+      - ${PWD}:${PWD}
+    working_dir: ${PWD}
