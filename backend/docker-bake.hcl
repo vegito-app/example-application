@@ -1,6 +1,6 @@
-variable "LOCAL_EXAMPLE_APPLICATIONBACKEND_DIR" {
+variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_DIR" {
   description = "current git tag or commit version"
-  default     = "application/backend"
+  default     = "${VEGITO_EXAMPLE_APPLICATION_DIR}/backend"
 }
 
 variable "VERSION" {
@@ -8,60 +8,62 @@ variable "VERSION" {
   default     = "dev"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGES_BASE" {
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGES_BASE" {
   default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:application-backend"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE" {
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE" {
   default = notequal("dev", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:application-backend-${VERSION}" : ""
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST" {
-  default = "${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGES_BASE}-latest"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGES_BASE}-latest"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE" {
-  default = "${VEGITO_APP_PUBLIC_IMAGES_BASE}/cache/application-backend"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE" {
+  default = "${VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE}/cache/example-application/backend"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE_CI" {
-  default = "${VEGITO_APP_PUBLIC_IMAGES_BASE}/cache/application-backend/ci"
-}
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE" {
-  default = "${LOCAL_EXAMPLE_APPLICATIONBACKEND_DIR}/.containers/application-backend/docker-buildx-cache"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE_CI" {
+  default = "${VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE}/cache/example-application/backend-ci"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_CACHE_WRITE" {
-  description = "local write cache for local-example-application-backend image build"
-  default = "type=local,mode=max,dest=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE" {
+  default = "${LOCAL_EXAMPLE_APPLICATION_BACKEND_DIR}/.containers/application-backend/docker-buildx-cache"
 }
 
-variable "LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ" {
-  description = "local read cache for local-example-application-backend image build (cannot be used before first write)"
-  default = "type=local,src=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_CACHE_WRITE" {
+  description = "local write cache for example-application-backend image build"
+  default = "type=local,mode=max,dest=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
 }
 
-target "local-example-application-backend-ci" {
-  context = "example-application/backend"
+variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ" {
+  description = "local read cache for example-application-backend image build (cannot be used before first write)"
+  default = "type=local,src=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
+}
+
+target "example-application-backend-ci" {
+  context = "${VEGITO_EXAMPLE_APPLICATION_DIR}/backend"
   contexts = {
-    "approot" : "example-application"
-    "appfrontend" : "example-application/frontend"
-    "project" : "."
+    "approot" : VEGITO_EXAMPLE_APPLICATION_DIR
+    "appfrontend" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/frontend"
+    "vegitolocal" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/local"
   }
   args = {
     builder_image = LOCAL_BUILDER_IMAGE_VERSION
+    application_directory = "."
   }
   tags = [
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE,
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST,
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE,
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST,
   ]
   cache-from = [
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE}" : "",
-    "type=inline,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST}",
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ,
+    USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE}" : "",
+    "type=inline,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST}",
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ,
   ]
   cache-to = [
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE},mode=max" : "type=inline",
+    USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE},mode=max" : "type=inline",
   ]
   platforms = [
     "linux/amd64",
@@ -69,26 +71,27 @@ target "local-example-application-backend-ci" {
   push = true
 }
 
-target "local-example-application-backend" {
-  context = "example-application/backend"
+target "example-application-backend" {
+  context = "${VEGITO_EXAMPLE_APPLICATION_DIR}/backend"
   contexts = {
-    "approot" : "example-application"
-    "appfrontend" : "example-application/frontend"
-    "project" : "."
+    "approot" : VEGITO_EXAMPLE_APPLICATION_DIR
+    "appfrontend" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/frontend"
+    "vegitolocal" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/local"
   }
   args = {
     builder_image = LOCAL_BUILDER_IMAGE_LATEST
+    application_directory = "."
   }
   tags = [
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE,
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST,
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE,
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST,
   ]
   cache-from = [
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE}" : "",
-    LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ,
-    "type=inline,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST}",
+    USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE}" : "",
+    VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ,
+    "type=inline,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST}",
   ]
   cache-to = [
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE},mode=max" : LOCAL_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_CACHE_WRITE,
+    USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_REGISTRY_CACHE},mode=max" : VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_CACHE_WRITE,
   ]
 }
