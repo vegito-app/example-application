@@ -25,7 +25,7 @@ group "example-application" {
 }
 group "example-application-ci" {
   targets = [
-    "example-application-backend",
-    "example-application-mobile",
+    "example-application-backend-ci",
+    "example-application-mobile-ci",
   ]
 }

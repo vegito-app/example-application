@@ -4,7 +4,7 @@ services:
       context: ${PWD}
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    image: ${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-app:example-application-backend-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-example:application-backend-latest}
     env_file:
       - .env
     environment:
@@ -30,11 +30,11 @@ services:
   example-application-mobile:
     cap_add:
       - SYS_ADMIN
-    image: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-app:example-application-mobile-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-example:application-mobile-latest}
     env_file:
       - .env
     environment:
-      LOCAL_ANDROID_EMULATOR_DATA: ${LOCAL_ANDROID_EMULATOR_DATA:-${PWD}/example-application/tests/mobile_images}
+      LOCAL_ANDROID_EMULATOR_DATA: ${LOCAL_ANDROID_EMULATOR_DATA:-${PWD}/tests/mobile_images}
     privileged: true
     volumes:
       - ${LOCAL_WORKSPACE:-${PWD}}:${PWD}:cached
@@ -68,24 +68,3 @@ services:
       set -eu
       sleep infinity
       '
-
-  trivy:
-    image: aquasec/trivy:latest
-    entrypoint: sh
-    command: |
-      -c '
-      set -eu
-      trivy image --quiet --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --ignorefile /trivy-ignore.txt \
-        --ignore-policy /trivy-ignore-policy.json \
-        --format json \
-        --output /trivy-report.json \
-        --cache-dir /trivy-cache \
-        ${VEGITO_BACKEND_IMAGE_LATEST} && \
-      echo "Trivy scan completed successfully. Reports generated at /trivy-report.txt and /trivy-report.json." || \
-      echo "Trivy scan failed. Check the reports for details." && \
-      echo "Running in sleep mode to keep the container alive for further inspection." && \
-      sleep infinity
-      '
-    volumes:
-      - ${PWD}:${PWD}
-    working_dir: ${PWD}

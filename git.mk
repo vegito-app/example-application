@@ -46,7 +46,12 @@ LOCAL_GO_MODULES := \
 	backend \
 	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR)/functions/auth \
 	proxy
+
+LOCAL_CLARINET_DEVNET_IMAGE := $(LOCAL_CLARINET_DEVNET_IMAGE_LATEST)
+LOCAL_FIREBASE_EMULATORS_IMAGE := $(LOCAL_FIREBASE_EMULATORS_IMAGE_LATEST)
+LOCAL_VAULT_DEV_IMAGE := $(LOCAL_VAULT_DEV_IMAGE_LATEST)
+
 -include $(LOCAL_DIR)/local.mk
 GOOGLE_CLOUD_DIR := $(LOCAL_DIR)/google-cloud
 -include $(GOOGLE_CLOUD_DIR)/google-cloud.mk
-# ------------------------------------------
+# ----------------------------------------------------------

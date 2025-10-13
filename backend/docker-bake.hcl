@@ -9,11 +9,11 @@ variable "VERSION" {
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGES_BASE" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:application-backend"
+  default = "${VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE}:application-backend"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE" {
-  default = notequal("dev", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:application-backend-${VERSION}" : ""
+  default = notequal("dev", VERSION) ? "${VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE}:application-backend-${VERSION}" : ""
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_LATEST" {
@@ -34,12 +34,12 @@ variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE" {
 
 variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_CACHE_WRITE" {
   description = "local write cache for example-application-backend image build"
-  default = "type=local,mode=max,dest=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
+  default     = "type=local,mode=max,dest=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ" {
   description = "local read cache for example-application-backend image build (cannot be used before first write)"
-  default = "type=local,src=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
+  default     = "type=local,src=${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE_DOCKER_BUILDX_LOCAL_CACHE}"
 }
 
 target "example-application-backend-ci" {
@@ -50,7 +50,7 @@ target "example-application-backend-ci" {
     "vegitolocal" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/local"
   }
   args = {
-    builder_image = LOCAL_BUILDER_IMAGE_VERSION
+    builder_image         = LOCAL_BUILDER_IMAGE_VERSION
     application_directory = "."
   }
   tags = [
@@ -79,7 +79,7 @@ target "example-application-backend" {
     "vegitolocal" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/local"
   }
   args = {
-    builder_image = LOCAL_BUILDER_IMAGE_LATEST
+    builder_image         = LOCAL_BUILDER_IMAGE_LATEST
     application_directory = "."
   }
   tags = [

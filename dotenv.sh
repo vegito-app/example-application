@@ -7,11 +7,13 @@ set -eu
 
 trap "echo Exited with code $?." EXIT
 
-projectName=${VEGITO_PROJECT_NAME:-vegito-app}
+projectName=${VEGITO_PROJECT_NAME:-vegito-example-application}
 projectUser=${VEGITO_PROJECT_USER:-local-developer-id}
 localDockerComposeProjectName=${VEGITO_COMPOSE_PROJECT_NAME:-$projectName-$projectUser}
 
-GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID:-${DEV_GOOGLE_CLOUD_PROJECT_ID:-moov-dev-439608}}
+DEV_GOOGLE_CLOUD_PROJECT_ID=${DEV_GOOGLE_CLOUD_PROJECT_ID:-moov-dev-439608}
+
+GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID:-${DEV_GOOGLE_CLOUD_PROJECT_ID}}
 
 currentWorkingDir=${WORKING_DIR:-${PWD}}
 # Ensure the current working directory exists.
@@ -29,15 +31,18 @@ localDotenvFile=${currentWorkingDir}/.env
 COMPOSE_PROJECT_NAME=${localDockerComposeProjectName}
 # Enable or disable the use of the Docker registry cache.
 USE_REGISTRY_CACHE=${USE_REGISTRY_CACHE:-true}
+# Enable or disable the use of the local development environment.
+MAKE_DEV_ON_START=${MAKE_DEV_ON_START:-false}
 # Make sure to set the correct values for using your personnal credentials IAM permissions. 
 VEGITO_PROJECT_USER=${VEGITO_PROJECT_USER:-${USER:-vegito-developer-id}}
 # 
 #------------------------------------------------------- 
 # The following resources are used for the local development environment:
-#
-DEV_GOOGLE_IDP_OAUTH_KEY_SECRET_ID=projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-key/versions/latest
-DEV_GOOGLE_IDP_OAUTH_CLIENT_ID_SECRET_ID=projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-client-id/versions/latest
-DEV_STRIPE_KEY_SECRET_SECRET_ID=projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/stripe-key/versions/latest
+# 
+GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID:-$DEV_GOOGLE_CLOUD_PROJECT_ID}
+DEV_GOOGLE_IDP_OAUTH_KEY_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-key/versions/latest
+DEV_GOOGLE_IDP_OAUTH_CLIENT_ID_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-client-id/versions/latest
+DEV_STRIPE_KEY_SECRET_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/stripe-key/versions/latest
 # 
 LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-${VERSION:-latest}
 #
@@ -82,7 +87,7 @@ dockerComposeOverride=${WORKING_DIR:-${PWD}}/.docker-compose-services-override.y
 services:
   dev:
     environment:
-      - LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${DEV_GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-latest
+      - LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-latest
       - MAKE_DEV_ON_START=true
       - LOCAL_APPLICATION_TESTS_RUN_ON_START=true
       - LOCAL_CONTAINER_INSTALL=true

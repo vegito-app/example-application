@@ -4,9 +4,14 @@ VEGITO_EXAMPLE_APPLICATION_DIR ?= $(CURDIR)
 -include $(VEGITO_EXAMPLE_APPLICATION_DIR)/backend/backend.mk
 -include $(VEGITO_EXAMPLE_APPLICATION_DIR)/mobile/mobile.mk
 
+VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE ?= $(VEGITO_PUBLIC_REPOSITORY)/vegito-example
+
 VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES := \
   backend \
   mobile
+
+EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH ?=$(LOCAL_ANDROID_RELEASE_KEYSTORE_BASE64_PATH)
+EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_STORE_PASS_PATH ?=$(LOCAL_ANDROID_RELEASE_KEYSTORE_STORE_PASS_BASE64_PATH)
 
 example-application-docker-images:
 	@$(MAKE) -j $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
@@ -18,8 +23,8 @@ $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-i
 .PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
 
 example-application-docker-images-ci:
-	@$(DOCKER_BUILDX_BAKE) --print example-application-ci
-	@$(LOCAL_DOCKER_BUILDX_BAKE) --push example-application-ci
+	$(LOCAL_DOCKER_BUILDX_BAKE) --print example-application-ci
+	$(LOCAL_DOCKER_BUILDX_BAKE) --push example-application-ci
 .PHONY: example-application-local-docker-images-ci
 
 $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image-ci): docker-buildx-setup
@@ -114,8 +119,8 @@ $(LOCAL_CONTAINERS_GROUP_OPERATIONS_CI:%=example-application-containers-%-ci): l
 	  $(LOCAL_DEV_CONTAINER_RUN) \
 	    make example-application-containers-$(@:example-application-containers-%-ci=%) \
 	      LOCAL_ANDROID_CONTAINER_NAME=application-mobile \
-	      VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):application-backend-$(VERSION) \
-	      VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):application-mobile-$(VERSION)
+	      VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE=$(VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE):application-backend-$(VERSION) \
+	      VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE=$(VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE):application-mobile-$(VERSION)
 .PHONY: $(LOCAL_CONTAINERS_GROUP_OPERATIONS_CI:%=example-application-containers-%-ci)
 
 example-application-local-docker-images-push-parallel: 

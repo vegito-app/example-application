@@ -125,7 +125,7 @@ target "example-application-mobile-ci" {
   contexts = {
     "android" : LOCAL_ANDROID_DIR
     "approot" : VEGITO_EXAMPLE_APPLICATION_DIR
-     "project": "."
+    "vegitolocal" : "${VEGITO_EXAMPLE_APPLICATION_DIR}/local"
   }
   tags = [
     VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_LATEST,

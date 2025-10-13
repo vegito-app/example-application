@@ -51,10 +51,10 @@ images: example-application-docker-images
 images-ci: example-application-docker-images-ci
 .PHONY: images-ci
 
-images-pull: local-docker-images-pull-parallel local-android-local-docker-images-pull-parallel example-application-local-docker-images-pull-parallel
+images-pull: local-docker-images-pull-parallel example-application-local-docker-images-pull-parallel
 .PHONY: images-pull
 
-images-push: local-docker-images-push local-application-local-docker-images-push
+images-push: local-docker-images-push example-applicationdocker-images-push
 .PHONY: images-push
 
 dev: local-containers-up local-android-containers-up example-application-containers-up

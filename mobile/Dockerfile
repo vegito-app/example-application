@@ -17,7 +17,7 @@ COPY --from=approot Makefile .
 COPY --from=approot git.mk .
 COPY --from=approot example-application.mk ./
 
-RUN mkdir -p local
+RUN mkdir -p local/android
 
 COPY --from=vegitolocal local.mk local/ 
 
@@ -29,7 +29,7 @@ COPY --chown=${non_root_user}:${non_root_user} mobile.mk mobile/
 COPY --chown=${non_root_user}:${non_root_user} android mobile/android/
 COPY --chown=${non_root_user}:${non_root_user} lib mobile/lib/
 
-COPY --from=android android.mk android/
+COPY --from=android android.mk local/android/
 
 # Build APK and AAB signed release with the provided keystore and keystore password
 # The keystore file and the keystore password must be provided as build secrets
@@ -44,9 +44,9 @@ RUN --mount=type=secret,id=keystore,dst=/tmp/release.keystore \
     sudo cat /tmp/release.keystore | base64 --decode > ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH} && \
     sudo cat /tmp/release.storepass > ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH}.storepass.base64 && \
     SHA1=$(keytool -list -v \
-            -keystore ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH} \
-            -storepass $(cat ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH}.storepass.base64 | base64 --decode) \
-            | grep 'SHA1:' | awk '{print $2}') && \
+    -keystore ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH} \
+    -storepass $(cat ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH}.storepass.base64 | base64 --decode) \
+    | grep 'SHA1:' | awk '{print $2}') && \
     echo "Local Android Keystore SHA1 fingerprint: $SHA1"
 
 ARG version=dev
@@ -61,7 +61,7 @@ ENV VERSION=${version}
 ENV LOCAL_ANDROID_CONTAINER_EXEC="" 
 ENV FLUTTER="cd mobile && flutter" 
 
-RUN make -j2 \
+RUN make \
     example-application-mobile-android-release \
     example-application-mobile-flutter-build-apk-debug
 
@@ -69,9 +69,9 @@ FROM ${apk_runner_appium_image} AS runner
 
 ARG version=dev
 
-COPY --from=builder /home/android/src/android/app-release-${version}-signed-aligned.apk /build/output/app-release-${version}.apk
-COPY --from=builder /home/android/src/android/app-release-${version}-signed.aab /build/output/app-release-${version}.aab
-COPY --from=builder /home/android/src/example-application/mobile/build/app/outputs/flutter-apk/app-debug.apk /build/output/app-debug-${version}.apk
+COPY --from=builder /home/android/src/local/android/app-release-${version}-signed-aligned.apk /build/output/app-release-${version}.apk
+COPY --from=builder /home/android/src/local/android/app-release-${version}-signed.aab /build/output/app-release-${version}.aab
+COPY --from=builder /home/android/src/mobile/build/app/outputs/flutter-apk/app-debug.apk /build/output/app-debug-${version}.apk
 ARG android_package_name=dev.vegito.app.android
 
 ENV LOCAL_ANDROID_APK_PATH=/build/output/app-debug-${version}.apk
