@@ -36,6 +36,11 @@ VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES ?= \
   example-application-backend \
   example-application-mobile
 
+$(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES):
+	@echo "⬆︎ Bringing up container for $(@:%=%)..."
+	@$(MAKE) $(@:%=%-container-up)
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES)
+
 example-application-containers-rm: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-rm)
 .PHONY: example-application-containers-rm
 
