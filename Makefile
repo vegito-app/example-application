@@ -73,6 +73,6 @@ dev-ci-rm: local-dev-container-image-pull local-containers-rm-ci example-applica
 logs: local-dev-container-logs-f
 .PHONY: logs
 
-end-to-end-tests: local-robotframework-tests-container-run
-	@echo "End-to-end tests completed successfully."
-.PHONY: end-to-end-tests
+tests: local-robotframework-tests-container-run
+	@echo "Tests completed successfully."
+.PHONY: tests
