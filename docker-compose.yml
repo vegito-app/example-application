@@ -50,8 +50,8 @@ services:
           - example-application-mobile
     working_dir: ${PWD}/mobile
 
-  vegito-tests:
-    image: ${LOCAL_APPLICATION_TESTS_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-local:application-tests-latest}
+  example-application-tests:
+    image: ${LOCAL_APPLICATION_TESTS_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-example:application-tests-latest}
     environment:
       VEGITO_BACKEND_URL_DEBUG: ${VEGITO_BACKEND_URL_DEBUG:-http://example-application-backend:8080}
       LOCAL_WORKSPACE: ${PWD}
