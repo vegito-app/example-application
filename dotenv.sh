@@ -3,7 +3,7 @@
 # This script is run on the host as devcontainer 'initializeCommand' 
 # (cf. https://containers.dev/implementors/json_reference/#lifecycle-scripts)
 
-set -eu
+set -euo pipefail
 
 trap "echo Exited with code $?." EXIT
 
@@ -65,8 +65,8 @@ GITHUB_ACTIONS_RUNNER_URL=https://github.com/vegito-app
 # configurations between them each others selves.
 #                                                                
 ANDROID_HOST=android-studio
-VEGITO_BACKEND_DEBUG_URL=http://example-application-backend:8888
-VEGITO_BACKEND_URL=http://example-application-backend:8080
+EXAMPLE_APPLICATION_BACKEND_DEBUG_URL=http://example-application-backend:8888
+EXAMPLE_APPLICATION_BACKEND_URL=http://example-application-backend:8080
 CLARINET_RPC=http://clarinet-devnet:20443
 FIREBASE_AUTH_EMULATOR_HOST=firebase-emulators:9099
 FIREBASE_DATABASE_EMULATOR_HOST=firebase-emulators:9000
@@ -90,22 +90,21 @@ services:
       - LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-latest
       - MAKE_DEV_ON_START=true
       - LOCAL_APPLICATION_TESTS_RUN_ON_START=true
-      - LOCAL_CONTAINER_INSTALL=true
+      - LOCAL_CONTAINER_INSTALL=1
     command: |
       bash -c '
-      make docker-sock
-      if [ "$${MAKE_DEV_ON_START}" = "true" ] ; then
-        make dev
-        if [ "$${VEGITO_TESTS_RUN_ON_START}" = "true" ] ; then
-          until make local-vegito-tests-check-env ; do
-            echo "[vegito-tests] Waiting for environment to be ready..."
+        make docker-sock
+        if [ "${MAKE_DEV_ON_START:-true}" = "true" ] ; then
+          make dev
+        fi
+        if [ "${LOCAL_ROBOTFRAMEWORK_TESTS_RUN_ON_START:-false}" = "true" ] ; then
+          until make local-robotframework-tests-check-env ; do
+            echo "[robotframework-tests] Waiting for environment to be ready..."
             sleep 5
           done
-          
-          make vegito-tests-robot-framework-all-run
+          make robotframework-tests
         fi
-      fi
-      sleep infinity
+        sleep infinity
       '
 
   example-application-mobile:
@@ -115,35 +114,32 @@ services:
 
   android-studio:
     environment:
-      APK_PATH: build/app/outputs/flutter-apk/app-release.apk
-      LOCAL_ANDROID_EMULATOR_AVD_ON_START: false
-      LOCAL_ANDROID_STUDIO_DIR: ${PWD}/local/android/studio
-      LOCAL_ANDROID_STUDIO_CACHES_REFRESH: true
-      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/tests/mobile_images
+      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/example-application/tests/mobile_images
       LOCAL_ANDROID_STUDIO_ON_START: true
-    working_dir: ${PWD}/mobile
-
-    entrypoint: ${PWD}/local/android/studio/entrypoint.sh
-  vault-dev:
-    working_dir: ${PWD}
-
+    working_dir: ${PWD}/example-application/mobile
   clarinet-devnet:
-    working_dir: ${PWD}/local/clarinet-devnet
-    command: |
-      bash -c '
-      set -eu
-      make -C ../.. local-clarinet-devnet-start
-      sleep infinity
-      '
-  vegito-tests:
     environment:
-      # - VEGITO_BACKEND_URL_DEBUG: http://devcontainer:8888
+      LOCAL_CLARINET_DEVNET_CACHES_REFRESH: ${LOCAL_CLARINET_DEVNET_CACHES_REFRESH:-true}
+      
+  robotframework-tests:
+    working_dir: ${PWD}/tests
+    environment:
+      LOCAL_ROBOTFRAMEWORK_TESTS_DIR: ${PWD}/tests
 
   firebase-emulators:
     environment:
-      - LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION=vegetable-images-validated-backend
-      - LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION_DEBUG=vegetable-images-validated-backend-debug
-      - LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_CREATED_TOPIC=vegetable-images-created
+      LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION=vegetable-images-validated-backend
+      LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION_DEBUG=vegetable-images-validated-backend-debug
+      LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_CREATED_TOPIC=vegetable-images-created
+
+  vault-dev:
+    working_dir: ${PWD}/example-application/
+    command: |
+      bash -c '
+      set -euo pipefail
+      ./vault-init.sh
+      sleep infinity
+      '
 EOF
 
 dockerNetworkName=${VEGITO_LOCAL_DOCKER_NETWORK_NAME:-dev}
@@ -202,11 +198,11 @@ services:
         aliases:
           - vault-dev
 
-  vegito-tests:
+  robotframework-tests:
     networks:
       ${dockerNetworkName}:
         aliases:
-          - vegito-tests
+          - robotframework-tests
 EOF
 
 # Set this file according to the local development environment. The file is gitignored due to the local nature of the configuration.
@@ -217,6 +213,12 @@ services:
   android-studio:
     # environment:
     #  LOCAL_ANDROID_GPU_MODE=host
+    # runtime: nvidia
+    # devices:
+    #   - /dev/nvidia0
+  example-application-mobile:
+    # environment:
+    #  LOCAL_ANDROID_GPU_MODE: host
     # runtime: nvidia
     # devices:
     #   - /dev/nvidia0

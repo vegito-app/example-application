@@ -2,12 +2,12 @@ VEGITO_PROJECT_NAME := example-application
 LOCAL_DIR := $(CURDIR)/local
 GIT_HEAD_VERSION ?= $(shell git describe --tags --abbrev=7 --match "v*" 2>/dev/null)
 
-LOCAL_VERSION ?= $(GIT_HEAD_VERSION)
-ifeq ($(LOCAL_VERSION),)
-LOCAL_VERSION := latest
+EXAMPLE_APPLICATION_VERSION ?= $(GIT_HEAD_VERSION)
+ifeq ($(EXAMPLE_APPLICATION_VERSION),)
+EXAMPLE_APPLICATION_VERSION := latest
 endif
 
-VERSION ?= $(LOCAL_VERSION)
+VERSION ?= $(EXAMPLE_APPLICATION_VERSION)
 
 export
 
