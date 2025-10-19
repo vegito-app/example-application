@@ -9,7 +9,7 @@ on:
     branches: [main]
 jobs:
   application-release-build:
-    uses: vegito-app/local/.github/workflows/application-main-release-template.yml@main
+    uses: vegito-app/local/.github/workflows/application-main-release-template.yml@v1.6.0
     with:
       environment: dev
       android_release_keystore_base64_path: mobile/android/release-key.keystore.base64
