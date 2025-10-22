@@ -9,11 +9,11 @@ on:
     branches: [main]
 jobs:
   application-release-build:
-    uses: vegito-app/local/.github/workflows/application-main-release-template.yml@v1.6.0
+    uses: vegito-app/local/.github/workflows/application-main-release-template.yml@dev
     with:
       environment: dev
-      android_release_keystore_base64_path: mobile/android/release-key.keystore.base64
       android_release_keystore_path: mobile/android/release-key.keystore
+      android_release_keystore_base64_path: mobile/android/release-key.keystore.base64
       android_release_keystore_store_pass_base64_path: mobile/android/release-key.keystore.storepass.base64
       use_registry_cache: true
     secrets:

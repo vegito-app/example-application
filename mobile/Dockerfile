@@ -63,6 +63,7 @@ ENV FLUTTER="cd mobile && flutter"
 
 RUN make \
     example-application-mobile-android-release \
+    && echo "$SHA1" > /home/android/src/local/android/app-release-${version}-key.keystore.sha1 \
     example-application-mobile-flutter-build-apk-debug
 
 FROM ${apk_runner_appium_image} AS runner
@@ -72,6 +73,7 @@ ARG version=dev
 COPY --from=builder /home/android/src/local/android/app-release-${version}-signed-aligned.apk /build/output/app-release-${version}.apk
 COPY --from=builder /home/android/src/local/android/app-release-${version}-signed.aab /build/output/app-release-${version}.aab
 COPY --from=builder /home/android/src/mobile/build/app/outputs/flutter-apk/app-debug.apk /build/output/app-debug-${version}.apk
+COPY --from=builder /home/android/src/local/android/app-release-${version}-key.keystore.sha1 /build/output/app-release-${version}-key.keystore.sha1
 ARG android_package_name=dev.vegito.app.android
 
 ENV LOCAL_ANDROID_APK_PATH=/build/output/app-debug-${version}.apk
