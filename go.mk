@@ -13,10 +13,9 @@ ifeq ($(UNAME_M), aarch64)
   GOARCH = arm64
 endif
 
-VEGITO_EXAMPLE_APPLICATION_GO_MODULES := \
+VEGITO_EXAMPLE_APPLICATION_GO_MODULES = \
 	backend \
-	images \
-	firebase/functions/auth \
+	local/firebase-emulators/auth_functions \
 	local/proxy
 
 go-mod-tidy: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-tidy)

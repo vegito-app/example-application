@@ -51,14 +51,10 @@ example-application-mobile-flutter-analyze:
 	@$(FLUTTER) analyze
 .PHONY: example-application-mobile-flutter-analyze
 
-ADB ?= $(LOCAL_DOCKER_COMPOSE) exec android-studio adb
-
 flutter-app-uninstall:
 	@echo "Uninstalling the app from the emulator"
 	@$(ADB) uninstall dev.vegito.app.android || true
 .PHONY: flutter-app-uninstall
-
-VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_VERSION ?= ${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:application-mobile-${VERSION}
 
 VEGITO_EXAMPLE_APPLICATION_MOBILE_BUILDS = apk ios appbundle
 
@@ -176,28 +172,6 @@ local-android-verify-apk \
 local-android-sign-aab
 .PHONY: example-application-mobile-android-release-build
 
-VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_APK_RELEASE_EXTRACT_PATH ?= ${VEGITO_EXAMPLE_APPLICATION_MOBILE_DIR}/app-release-$(VERSION)-extract.apk
-
-example-application-mobile-image-tag-apk-extract:
-	@echo "Creating temp container from image $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_VERSION)"
-	@container_id=$$(docker create $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_VERSION)) && \
-	  echo "Copying APK from container $$container_id..." && \
-	  docker cp $$container_id:/build/output/app-release-$(VERSION).apk $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_APK_RELEASE_EXTRACT_PATH) && \
-	  docker rm $$container_id > /dev/null && \
-	  echo "✅ APK extracted to $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_APK_RELEASE_EXTRACT_PATH)"
-.PHONY: example-application-mobile-image-tag-apk-extract
-
-VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_AAB_RELEASE_EXTRACT_PATH ?= ${VEGITO_EXAMPLE_APPLICATION_MOBILE_DIR}/app-release-$(VERSION)-extract.aab
-
-example-application-mobile-image-tag-aab-extract:
-	@echo "Creating temp container from image $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_VERSION)"
-	@container_id=$$(docker create $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_VERSION)) && \
-	  echo "Copying AAB from container $$container_id..." && \
-	  docker cp $$container_id:/build/output/app-release-$(VERSION).aab $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_AAB_RELEASE_EXTRACT_PATH) && \
-	  docker rm $$container_id > /dev/null && \
-	  echo "✅ AAB extracted to $(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_AAB_RELEASE_EXTRACT_PATH)"
-.PHONY: example-application-mobile-image-tag-aab-extract
-
 example-application-mobile-flutter-android-release:
 	@echo "🏗️ Building unsigned APK and AAB for '$(INFRA_ENV)'..."
 	@$(MAKE) \
@@ -207,9 +181,6 @@ example-application-mobile-flutter-android-release:
 	  example-application-mobile-flutter-build-appbundle-release
 .PHONY: example-application-mobile-flutter-android-release
 
-example-application-mobile-image-tag-release-exrtract: example-application-mobile-image-tag-aab-extract example-application-mobile-image-tag-apk-extract
-.PHONY: example-application-mobile-image-tag-release-exrtract
-
 ################################################################################
 ## 📦 ANDROID RELEASE FULL PIPELINE
 ################################################################################
@@ -218,7 +189,7 @@ VEGITO_EXAMPLE_APPLICATION_MOBILE_RELEASE_APK_PATH ?= $(VEGITO_EXAMPLE_APPLICATI
 VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_PACKAGE_NAME ?= $(INFRA_ENV).vegito.app.android
 VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_KEYSTORE_ALIAS_NAME ?= vegito-local-release
 VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_DNAME ?= "CN=Vegito, OU=Dev, O=Vegito, L=Paris, S=IDF, C=FR"
-VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH ?= $(VEGITO_EXAMPLE_APPLICATION_MOBILE_DIR)/$(VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_PACKAGE_NAME)-release.android.keystore
+VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH ?= $(LOCAL_ANDROID_RELEASE_KEYSTORE_PATH)
 
 example-application-mobile-android-release:
 	@LOCAL_ANDROID_RELEASE_AAB_UNSIGNED_PATH=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_RELEASE_AAB_PATH) \
@@ -236,8 +207,35 @@ example-application-mobile-android-release-keystore:
 	@LOCAL_ANDROID_RELEASE_KEYSTORE_ALIAS_NAME=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_KEYSTORE_ALIAS_NAME) \
 	LOCAL_ANDROID_RELEASE_KEYSTORE_DNAME=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_DNAME) \
 	LOCAL_ANDROID_RELEASE_KEYSTORE_PATH=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH) \
-	$(MAKE) local-android-release-keystore 
+	  $(MAKE) local-android-release-keystore 
 .PHONY: example-application-mobile-android-release-keystore
+## 📦 END ANDROID RELEASE FULL PIPELINE
+################################################################################
 
+VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_NAME = example-application-mobile
 
+VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_EXEC = $(LOCAL_DOCKER_COMPOSE) exec $(VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_NAME)
 
+VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE = $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):example-application-mobile-$(VERSION)
+
+example-application-mobile-wait-for-boot:
+	@LOCAL_ANDROID_CONTAINER_EXEC="$(VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_EXEC)" \
+	  $(MAKE) local-android-emulator-wait-for-boot
+.PHONY: example-application-mobile-wait-for-boot
+
+example-application-mobile-screenshot:
+	@echo "Capturing screenshot from Android Emulator..."
+	@LOCAL_ANDROID_CONTAINER_EXEC="$(VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_EXEC)" \
+	  $(MAKE) local-android-emulator-screenshot
+.PHONY: example-application-mobile-screenshot
+
+example-application-mobile-dump:
+	@echo "Capturing dump from Android Emulator..."
+	@LOCAL_ANDROID_BUILDER_CONTAINER_EXEC="$(VEGITO_EXAMPLE_APPLICATION_MOBILE_CONTAINER_EXEC)" \
+	  $(MAKE) local-android-emulator-dump
+.PHONY: example-application-mobile-dump
+
+example-application-mobile-extract-android-artifacts:
+	LOCAL_ANDROID_MOBILE_IMAGE=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE) \
+	$(MAKE) local-android-mobile-image-tag-release-extract
+.PHONY: example-application-mobile-extract-android-artifacts

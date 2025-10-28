@@ -30,7 +30,7 @@ localDotenvFile=${currentWorkingDir}/.env
 # Trigger the local project display name in Docker Compose.
 COMPOSE_PROJECT_NAME=${localDockerComposeProjectName}
 # Enable or disable the use of the Docker registry cache.
-USE_REGISTRY_CACHE=${USE_REGISTRY_CACHE:-true}
+
 # Enable or disable the use of the local development environment.
 MAKE_DEV_ON_START=${MAKE_DEV_ON_START:-false}
 # Make sure to set the correct values for using your personnal credentials IAM permissions. 
@@ -63,8 +63,8 @@ GITHUB_ACTIONS_RUNNER_URL=https://github.com/vegito-app
 # configurations between them each others selves.
 #                                                                
 ANDROID_HOST=android-studio
-EXAMPLE_APPLICATION_BACKEND_DEBUG_URL=http://example-application-backend:8888
-EXAMPLE_APPLICATION_BACKEND_URL=http://example-application-backend:8080
+VEGITO_EXAMPLE_APPLICATION_BACKEND_DEBUG_URL=http://example-application-backend:8888
+VEGITO_EXAMPLE_APPLICATION_BACKEND_URL=http://example-application-backend:8080
 CLARINET_RPC=http://clarinet-devnet:20443
 FIREBASE_AUTH_EMULATOR_HOST=firebase-emulators:9099
 FIREBASE_DATABASE_EMULATOR_HOST=firebase-emulators:9000
@@ -84,9 +84,9 @@ dockerComposeOverride=${WORKING_DIR:-${PWD}}/.docker-compose-services-override.y
 [ -f $dockerComposeOverride ] || cat <<'EOF' > $dockerComposeOverride
 services:
   dev:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-v1.6.0
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-v1.6.5
     environment:
-      - LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-v1.6.0
+      - LOCAL_BUILDER_IMAGE=europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:builder-v1.6.5
       - MAKE_DEV_ON_START=true
       - LOCAL_APPLICATION_TESTS_RUN_ON_START=true
       - LOCAL_CONTAINER_INSTALL=1
@@ -94,49 +94,49 @@ services:
       bash -c '
         make docker-sock
         if [ "${MAKE_DEV_ON_START:-true}" = "true" ] ; then
-          make dev
+          make dev -j
         fi
         if [ "${MAKE_TESTS_ON_START:-false}" = "true" ] ; then
-          until make local-robotframework-tests-check-env ; do
-            echo "[robotframework-tests] Waiting for environment to be ready..."
+          until make local-robotframework-check-env ; do
+            echo "[robotframework] Waiting for environment to be ready..."
             sleep 5
           done
-          make robotframework-tests
+          make robotframework
         fi
         sleep infinity
       '
 
   android-studio:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:android-studio-v1.6.0
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:android-studio-v1.6.5
     environment:
-      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/example-application/tests/mobile_images
+      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/tests/mobile_images
       LOCAL_ANDROID_STUDIO_ON_START: true
     working_dir: ${PWD}/mobile
 
   clarinet-devnet:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:clarinet-v1.6.0
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:clarinet-v1.6.5
     environment:
       LOCAL_CLARINET_DEVNET_CACHES_REFRESH: ${LOCAL_CLARINET_DEVNET_CACHES_REFRESH:-true}
     
   firebase-emulators:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:firebase-emulators-v1.6.0
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:firebase-emulators-v1.6.5
     environment:
       LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION=vegetable-images-validated-backend
       LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION_DEBUG=vegetable-images-validated-backend-debug
       LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_CREATED_TOPIC=vegetable-images-created
 
   vault-dev:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:vault-v1.6.0
-    working_dir: ${PWD}/example-application/
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:vault-devlo-v1.6.5
+    working_dir: ${PWD}/
     command: |
       bash -c '
       set -euo pipefail
       ./vault-init.sh
       sleep infinity
       '
-  robotframework-tests:
-    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:robotframework-tests-v1.6.0
-    working_dir: ${PWD}tests/robotframework
+  robotframework:
+    image: europe-west1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT_ID}/docker-repository-public/vegito-local:robotframework-v1.6.5
+    working_dir: ${PWD}/tests
 EOF
 
 dockerNetworkName=${VEGITO_LOCAL_DOCKER_NETWORK_NAME:-dev}
@@ -195,11 +195,11 @@ services:
         aliases:
           - vault-dev
 
-  robotframework-tests:
+  robotframework:
     networks:
       ${dockerNetworkName}:
         aliases:
-          - robotframework-tests
+          - robotframework
 EOF
 
 # Set this file according to the local development environment. The file is gitignored due to the local nature of the configuration.
