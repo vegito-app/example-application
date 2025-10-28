@@ -27,7 +27,7 @@ $(APPLICATION_BACKEND_INSTALL_BIN): example-application-backend-install
 
 example-application-backend-install:
 	@echo Installing backend...
-	@cd $(VEGITO_EXAMPLE_APPLICATION_DIR)/backend \
+	cd $(APPLICATION_BACKEND_DIR) \
 	  && go install -a -ldflags "-linkmode external -extldflags -static"
 	#   && go install -a -ldflags "-linkmode external"
 	@echo Installed backend.

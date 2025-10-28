@@ -1,43 +1,43 @@
-![Release Version](https://img.shields.io/github/v/release/vegito-app/example-application?sort=semver)
-![CI](https://github.com/vegito-app/example-application/actions/workflows/application-release.yml/badge.svg?branch=main)
+![Release Version](https://img.shields.io/github/v/application-release/vegito-app/example-application?sort=semver)
+![CI](https://github.com/vegito-app/example-application/actions/workflows/deploy.yml/badge.svg?branch=main)
 
 ### Application
 
-#### example-application-backend
+#### application-backend
 
 The _application-backend_ serves an _application-frontend_ web react application.
 
 Start _application-backend_:
 
 ```
-make example-application-backend-run
+make application-backend-run
 ```
 
 Build _application-backend_ image:
 
 ```
-make example-application-backend-image
+make application-backend-image
 ```
 
 Run _application-backend_ docker-compose service container from the _application-backend-image_.
 
 ```
-make example-application-backend-docker-compose-run
+make application-backend-docker-compose-run
 ```
 
 Some other companion Makefile targets in familly `application-backend-*` are also available, see [application/backend/backend.mk](application/backend/backend.mk) for details.
 
-    example-application-backend-docker-compose-logs
-    example-application-backend-docker-compose-rm
-    example-application-backend-docker-compose-run
-    example-application-backend-docker-compose-stop
-    example-application-backend-docker-compose-up
-    example-application-backend-docker-compose-rm
-    example-application-backend-image
-    example-application-backend-image-push
-    example-application-backend-image-push-ci
-    example-application-backend-install
-    example-application-backend-run
+    application-backend-docker-compose-logs
+    application-backend-docker-compose-rm
+    application-backend-docker-compose-run
+    application-backend-docker-compose-stop
+    application-backend-docker-compose-up
+    application-backend-docker-compose-rm
+    application-backend-image
+    application-backend-image-push
+    application-backend-image-push-ci
+    application-backend-install
+    application-backend-run
 
 #### application-frontend
 

@@ -67,12 +67,12 @@ images-ci: example-application-docker-images-ci
 
 images-pull: \
 local-docker-images-pull-parallel \
-example-application-local-docker-images-pull-parallel
+example-application-docker-images-pull-parallel
 .PHONY: images-pull
 
 images-push: \
 local-docker-images-push \
-example-application-local-docker-images-push
+example-application-docker-images-push
 .PHONY: images-push
 
 dev: \

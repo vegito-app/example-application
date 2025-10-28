@@ -1,7 +1,7 @@
 NODE_MODULES := \
-	$(EXAMPLE_APPLICATION_DIR)/frontend \
-	$(EXAMPLE_APPLICATION_DIR)/firebase/functions \
-	$(EXAMPLE_APPLICATION_DIR)/firebase/functions/auth
+	$(VEGITO_EXAMPLE_APPLICATION_FRONTEND_DIR) \
+	$(VEGITO_EXAMPLE_APPLICATION_DIR)/firebase/functions \
+	$(VEGITO_EXAMPLE_APPLICATION_DIR)/firebase/functions/auth
 
 node-modules-npm-check-updates: 
 	@$(MAKE) -j $(NODE_MODULES:%=%-npm-check-updates)

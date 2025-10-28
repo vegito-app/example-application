@@ -3,43 +3,36 @@ VEGITO_EXAMPLE_APPLICATION_DIR ?= $(CURDIR)
 -include $(VEGITO_EXAMPLE_APPLICATION_DIR)/frontend/frontend.mk
 -include $(VEGITO_EXAMPLE_APPLICATION_DIR)/backend/backend.mk
 -include $(VEGITO_EXAMPLE_APPLICATION_DIR)/mobile/mobile.mk
+-include $(VEGITO_EXAMPLE_APPLICATION_DIR)/tests/tests.mk
 
-VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE ?= $(VEGITO_PUBLIC_REPOSITORY)/vegito-example
-
-VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES := \
+APPLICATION_DOCKER_BUILDX_BAKE_IMAGES := \
   backend \
-  mobile
-
-EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH ?=$(LOCAL_ANDROID_RELEASE_KEYSTORE_BASE64_PATH)
-EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_STORE_PASS_PATH ?=$(LOCAL_ANDROID_RELEASE_KEYSTORE_STORE_PASS_BASE64_PATH)
+  mobile \
+  tests
 
 example-application-docker-images:
-	@$(MAKE) -j $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
+	@$(MAKE) -j $(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
 .PHONY: example-application-docker-images
 
-$(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image): docker-buildx-setup
+$(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image): docker-buildx-setup
 	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%-image=%)
 	@$(LOCAL_DOCKER_BUILDX_BAKE) --load $(@:%-image=%)
-.PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
+.PHONY: $(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image)
 
 example-application-docker-images-ci:
-	$(LOCAL_DOCKER_BUILDX_BAKE) --print example-application-ci
-	$(LOCAL_DOCKER_BUILDX_BAKE) --push example-application-ci
-.PHONY: example-application-local-docker-images-ci
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print example-application-ci
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push example-application-ci
+.PHONY: example-application-docker-images-ci
 
-$(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image-ci): docker-buildx-setup
+$(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image-ci): docker-buildx-setup
 	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%-image-ci=%-ci)
 	@$(LOCAL_DOCKER_BUILDX_BAKE) --push $(@:%-image-ci=%-ci)
-.PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image-ci)
+.PHONY: $(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=example-application-%-image-ci)
 
 VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES ?= \
   example-application-backend \
-  example-application-mobile
-
-$(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES):
-	@echo "⬆︎ Bringing up container for $(@:%=%)..."
-	@$(MAKE) $(@:%=%-container-up)
-.PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES)
+  example-application-mobile \
+  example-application-tests
 
 example-application-containers-rm: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-rm)
 .PHONY: example-application-containers-rm
@@ -47,6 +40,24 @@ example-application-containers-rm: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_S
 example-application-containers-up: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-up)
 .PHONY: example-application-containers-up
 
+$(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-up-ci): local-dev-container-image-pull
+	@echo "Running operation 'example-application-containers-$(@:example-application-containers-%-container-up-ci=%)' for all local containers in CI..."
+	@echo "Using builder image: $(LOCAL_BUILDER_IMAGE_VERSION)"
+	@LOCAL_BUILDER_IMAGE=$(LOCAL_BUILDER_IMAGE_VERSION) \
+	  LOCAL_ANDROID_GPU_MODE=swiftshader_indirect \
+	  $(LOCAL_DEV_CONTAINER_RUN) \
+	    make $(@:%-ci=%) \
+	      LOCAL_ANDROID_CONTAINER_NAME=$(LOCAL_ANDROID_CONTAINER_NAME) \
+	      VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):example-application-backend-$(VERSION) \
+	      VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):example-application-mobile-$(VERSION)
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-up-ci)
+
+example-application-containers-up-ci: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-up-ci)
+.PHONY: example-application-containers-up-ci
+
+
+example-application-containers-logs: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-logs)
+.PHONY: example-application-containers-logs
 
 $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-container-rm):
 	@echo "🗑️  Removing container for $(@:%-container-rm=%)..."
@@ -93,14 +104,14 @@ $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-image-pull):
 example-application-docker-compose-images-pull: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=%-image-pull)
 .PHONY: example-application-docker-compose-images-pull
 
-example-application-local-docker-images-pull: 
+example-application-docker-images-pull: 
 	@$(MAKE) -j example-application-docker-compose-images-pull
-.PHONY: example-application-local-docker-images-pull
+.PHONY: example-application-docker-images-pull
 
-example-application-local-docker-images-pull-parallel: 
+example-application-docker-images-pull-parallel: 
 	@echo Pulling all application images in parallel...
-	@$(MAKE) -j example-application-local-docker-images-pull
-.PHONY: example-application-local-docker-images-pull-parallel
+	@$(MAKE) -j example-application-docker-images-pull
+.PHONY: example-application-docker-images-pull-parallel
 
 $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=example-application-%-image-push):
 	@echo Pushing the container image for $(@:%-image-push=%)
@@ -110,11 +121,11 @@ $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=example-application-%-ima
 example-application-docker-compose-images-push: $(VEGITO_EXAMPLE_APPLICATION_DOCKER_COMPOSE_SERVICES:%=example-application-%-image-push)
 .PHONY: example-application-docker-compose-images-push
 
-example-application-local-docker-images-push: 
+example-application-docker-images-push: 
 	@$(MAKE) -j example-application-docker-compose-images-push
-.PHONY: example-application-local-docker-images-push
+.PHONY: example-application-docker-images-push
 
-LOCAL_CONTAINERS_GROUP_OPERATIONS_CI := up rm
+LOCAL_CONTAINERS_GROUP_OPERATIONS_CI := up rm logs
 
 $(LOCAL_CONTAINERS_GROUP_OPERATIONS_CI:%=example-application-containers-%-ci): local-dev-container-image-pull
 	@echo "Running operation 'example-application-containers-$(@:example-application-containers-%-ci=%)' for all local containers in CI..."
@@ -123,12 +134,12 @@ $(LOCAL_CONTAINERS_GROUP_OPERATIONS_CI:%=example-application-containers-%-ci): l
 	  LOCAL_ANDROID_GPU_MODE=swiftshader_indirect \
 	  $(LOCAL_DEV_CONTAINER_RUN) \
 	    make example-application-containers-$(@:example-application-containers-%-ci=%) \
-	      LOCAL_ANDROID_CONTAINER_NAME=application-mobile \
-	      VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE=$(VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE):application-backend-$(VERSION) \
-	      VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE=$(VEGITO_EXAMPLE_PUBLIC_IMAGES_BASE):application-mobile-$(VERSION)
+	      LOCAL_ANDROID_CONTAINER_NAME=$(LOCAL_ANDROID_CONTAINER_NAME) \
+	      VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):example-application-backend-$(VERSION) \
+	      VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):example-application-mobile-$(VERSION)
 .PHONY: $(LOCAL_CONTAINERS_GROUP_OPERATIONS_CI:%=example-application-containers-%-ci)
 
-example-application-local-docker-images-push-parallel: 
+example-application-docker-images-push-parallel: 
 	@echo Pushing all application images in parallel...
-	@$(MAKE) -j example-application-local-docker-images-push
-.PHONY: example-application-local-docker-images-push-parallel
+	@$(MAKE) -j example-application-docker-images-push
+.PHONY: example-application-docker-images-push-parallel

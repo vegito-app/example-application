@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-CONTAINER_NAME="example-application-backend"
+CONTAINER_NAME="application-backend"
 PORTS_TO_WAIT_FOR=(8080)
 
 bg_pids=()
@@ -46,7 +46,7 @@ while :; do
     break
   fi
   if ! kill -0 $wait_pid 2>/dev/null; then
-    echo "🥳 All example-application-backend ports are ready!"
+    echo "🥳 All application-backend ports are ready!"
     exit_code=0
     break
   fi

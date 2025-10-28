@@ -4,7 +4,7 @@ services:
       context: ${PWD}
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    image: ${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-example:application-backend-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_BACKEND_IMAGE:-europe-west1-docker.pkg.dev/moov-dev-439608/docker-repository-public/vegito-local:example-application-backend-latest}
     env_file:
       - .env
     environment:
@@ -25,12 +25,12 @@ services:
     networks:
       dev:
         aliases:
-          - example-application-backend
+          - application-backend
 
   example-application-mobile:
     cap_add:
       - SYS_ADMIN
-    image: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-example:application-mobile-latest}
+    image: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-local:example-application-mobile-latest}
     env_file:
       - .env
     environment:
@@ -47,24 +47,26 @@ services:
     networks:
       dev:
         aliases:
-          - example-application-mobile
-    working_dir: ${PWD}/mobile
+          - application-mobile
 
   example-application-tests:
-    image: ${LOCAL_APPLICATION_TESTS_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-example:application-tests-latest}
+    tty: true
+    image: ${VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE:-${VEGITO_PUBLIC_REPOSITORY}/vegito-local:example-application-tests-latest}
     environment:
-      VEGITO_BACKEND_URL_DEBUG: ${VEGITO_BACKEND_URL_DEBUG:-http://example-application-backend:8080}
+      APPLICATION_BACKEND_URL_DEBUG: http://application-backend:8888
       LOCAL_WORKSPACE: ${PWD}
-      LOCAL_APPLICATION_TESTS_DIR: ${VEGITO_APPLICATION_TESTS_DIR:-${PWD}/vegito/tests}
-      STORAGE_EMULATOR_HOST: ${VEGITO_STORAGE_EMULATOR_HOST:-http://firebase-emulators:9199}
-      VEGITO_TESTS_DIR: ${VEGITO_TESTS_DIR:-${PWD}/tests}
-    env_file:
-      - .env
+      LOCAL_ROBOTFRAMEWORK_DIR: ${PWD}/example-application/tests
+      STORAGE_EMULATOR_HOST: http://${FIREBASE_STORAGE_EMULATOR_HOST:-firebase-emulators:9199}
     volumes:
       - ${LOCAL_WORKSPACE:-${PWD}}:${PWD}:cached
-    working_dir: ${PWD}
-    command: |
-      bash -c '
-      set -eu
-      sleep infinity
-      '
+    working_dir: ${PWD}/example-application/tests
+    # working_dir: ${HOME}/tests
+    # command: |
+    #   bash -c '
+    #   set -eu
+    #   ./entrypoint.sh
+    #   '
+    networks:
+      dev:
+        aliases:
+          - application-tests

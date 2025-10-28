@@ -1,21 +1,20 @@
 ARG builder_image="vegito-local:local-builder-latest"
 FROM ${builder_image} AS build
 
-RUN mkdir ${HOME}/src
+RUN mkdir ${HOME}/src ${HOME}/src/local
 WORKDIR ${HOME}/src
 
-ARG application_directory
-ENV VEGITO_EXAMPLE_APPLICATION_DIR=${application_directory}
+# ARG application_directory="example-application"
+
+# ENV VEGITO_EXAMPLE_APPLICATION_DIR=${application_directory}
 
 COPY --from=approot Makefile .
+COPY --from=approot local/local.mk local/
 COPY --from=approot git.mk .
-COPY --from=approot example-application.mk .
 COPY --from=approot nodejs.mk .
 COPY --from=approot go.mk .
 
-# vegito local
-RUN mkdir -p local
-COPY --from=vegitolocal local.mk local/
+COPY --from=approot example-application.mk .
 
 # frontend
 RUN mkdir -p frontend 
