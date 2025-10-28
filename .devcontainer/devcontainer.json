@@ -2,8 +2,8 @@
   "name": "Go Dev Container",
   "dockerComposeFile": [
     "../docker-compose.yml",
-    "../example-application/docker-compose.yml",
-    // "./docker-compose.yml",
+    "../local/docker-compose.yml",
+    "./docker-compose.yml",
     "../.docker-compose-services-override.yml",
     "../.docker-compose-networks-override.yml",
     "../.docker-compose-gpu-override.yml"
@@ -12,39 +12,15 @@
     "dev"
   ],
   "containerEnv": {
-    "FLUTTER_ROOT": "${localWorkspaceFolder}/android/studio/.containers/android-studio/flutter"
+    "FLUTTER_ROOT": "${localWorkspaceFolder}/local/android/studio/.containers/android-studio/flutter"
   },
   "service": "dev",
   "initializeCommand": "${localWorkspaceFolder}/.devcontainer/initialize-cmd.sh",
   "workspaceFolder": "${localWorkspaceFolder}",
   "customizations": {
     "vscode": {
-      // 🚫 Empêche VSCode de rechercher ou indexer ces dossiers lourds
-      "search.exclude": {
-        "**/node_modules": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/.git": true,
-        "**/.devcontainer": false,
-        "**/.containers": true,
-        "**/.next": true,
-        "**/.cache": true
-      },
-      // 💤 Désactive la surveillance en temps réel sur ces dossiers
-      "files.watcherExclude": {
-        "**/node_modules/**": true,
-        "**/dist/**": true,
-        "**/build/**": true,
-        "**/.git/**": true,
-        "**/.cache/**": true
-      },
-      // 💨 (optionnel) Réduit la charge sur la recherche globale
-      "search.followSymlinks": false,
-      // 🧠 (optionnel) Exclut les node_modules de l’explorateur de fichiers
-      "files.exclude": {
-        "**/node_modules": true
-      },
       "editor.fontLigatures": false,
+      "editor.formatOnSave": true,
       "editor.inlineSuggest.enabled": true,
       "explorer.confirmDelete": false,
       "files.hotExit": "onExitAndWindowClose",
@@ -62,27 +38,16 @@
           "color": "terminal.ansiRed"
         }
       },
-      "diffEditor.hideUnchangedRegions.enabled": false,
-      "workbench.activityBar.location": "top",
-      "window.customTitleBarVisibility": "windowed",
       "terminal.integrated.defaultProfile.linux": "bash",
       "window.commandCenter": false,
       "workbench.colorTheme": "Dark Theme - JetBrains IDE",
       "workbench.iconTheme": "material-icon-theme",
-      "material-icon-theme.folders.theme": "specific",
       "workbench.layoutControl.enabled": false,
       "zenMode.centerLayout": false,
       "zenMode.hideLineNumbers": false,
       "diffEditor.ignoreTrimWhitespace": false,
       "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
-      },
-      "workbench.editor.editorActionsLocation": "titleBar",
-      "[dockercompose]": {
-        "editor.insertSpaces": true,
-        "editor.tabSize": 2,
-        "editor.autoIndent": "advanced",
-        "editor.defaultFormatter": "redhat.vscode-yaml"
       },
       "vsicons.dontShowNewVersionMessage": true,
       "files.autoSave": "onFocusChange",
@@ -144,44 +109,40 @@
           "label": "Firebase Functions",
           "onAutoForward": "silent"
         },
-        "4723": {
-          "label": "Appium - Android Debug Bridge - Android",
-          "onAutoForward": "silent"
-        },
         "5037": {
-          "label": "ADB - adb server - Studio - Android",
+          "label": "ADB - Android Debug Bridge - Android Studio",
           "onAutoForward": "silent"
         },
         "6037": {
-          "label": "ADB - Android Debug Bridge - Appium - Android",
+          "label": "ADB - Android Debug Bridge - Android Appium",
           "onAutoForward": "silent"
         },
         "7037": {
-          "label": "ADB - Vegito - Application Mobile - Android",
+          "label": "ADB - Vegito - Android Appium",
           "onAutoForward": "silent"
         },
         "6900": {
-          "label": "VNC - X server - Studio - Android",
+          "label": "VNC - X server - Android Studio",
           "onAutoForward": "silent"
         },
         "7900": {
-          "label": "VNC - X server - Appium - Android",
+          "label": "VNC - X server - Android Appium",
           "onAutoForward": "silent"
         },
         "8900": {
-          "label": "VNC - X server - Application Mobile - Android",
+          "label": "VNC - X server - Application Mobile",
           "onAutoForward": "silent"
         },
         "6901": {
-          "label": "Xpra - X server - Studio - Android",
+          "label": "Xpra - X server - Android Studio",
           "onAutoForward": "silent"
         },
         "7901": {
-          "label": "Xpra - X server - Appium - Android",
+          "label": "Xpra - X server - Android Appium",
           "onAutoForward": "silent"
         },
         "8901": {
-          "label": "Xpra - X server - Application Mobile - Android",
+          "label": "Xpra - X server - Application Mobile",
           "onAutoForward": "silent"
         },
         "8200": {
@@ -213,7 +174,7 @@
           "onAutoForward": "silent"
         },
         "9100": {
-          "label": "Flutter and Dart DevTools - Studio - Android",
+          "label": "Flutter and Dart DevTools",
           "onAutoForward": "silent"
         },
         "9150": {

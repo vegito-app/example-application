@@ -1,18 +1,17 @@
-VEGITO_PROJECT_NAME := vegito-local
+VEGITO_PROJECT_NAME := example-application
+LOCAL_DIR := $(CURDIR)/local
 GIT_HEAD_VERSION ?= $(shell git describe --tags --abbrev=7 --match "v*" 2>/dev/null)
 
-LOCAL_VERSION ?= $(GIT_HEAD_VERSION)
-ifeq ($(LOCAL_VERSION),)
-LOCAL_VERSION := latest
+VEGITO_EXAMPLE_APPLICATION_VERSION ?= $(GIT_HEAD_VERSION)
+ifeq ($(VEGITO_EXAMPLE_APPLICATION_VERSION),)
+VEGITO_EXAMPLE_APPLICATION_VERSION := latest
 endif
 
-VERSION ?= $(LOCAL_VERSION)
+VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
 
 export
 
 INFRA_PROJECT_NAME := moov
-
-DEV_GOOGLE_CLOUD_PROJECT_ID := moov-dev-439608
 
 DEV_GOOGLE_CLOUD_PROJECT_NAME   ?= $(INFRA_PROJECT_NAME)-dev
 DEV_GOOGLE_CLOUD_PROJECT_ID     ?= $(DEV_GOOGLE_CLOUD_PROJECT_NAME)-439608
@@ -30,7 +29,7 @@ STAGING_GOOGLE_CLOUD_PROJECT_NAME   ?= $(INFRA_PROJECT_NAME)-staging
 STAGING_GOOGLE_CLOUD_PROJECT_ID     ?= $(STAGING_GOOGLE_CLOUD_PROJECT_NAME)-440506
 STAGING_GOOGLE_CLOUD_PROJECT_NUMBER ?= 326118600145
 
-LOCAL_ROBOTFRAMEWORK_TESTS_DIR = $(EXAMPLE_APPLICATION_TESTS_DIR)/robot
+LOCAL_ROBOTFRAMEWORK_DIR := $(LOCAL_DIR)/robotframework
 
 LOCAL_DOCKER_BUILDX_BAKE = docker buildx bake \
 	-f $(LOCAL_DIR)/docker/docker-bake.hcl \
@@ -38,13 +37,13 @@ LOCAL_DOCKER_BUILDX_BAKE = docker buildx bake \
 	$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_DIR)/%/docker-bake.hcl) \
 	-f $(LOCAL_ANDROID_DIR)/docker-bake.hcl \
 	$(LOCAL_ANDROID_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_ANDROID_DIR)/%/docker-bake.hcl) \
-	-f $(EXAMPLE_APPLICATION_DIR)/docker-bake.hcl \
-	$(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
+	-f $(CURDIR)/docker-bake.hcl \
+	$(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
 	-f $(LOCAL_DIR)/github-actions/docker-bake.hcl
 
 LOCAL_DOCKER_COMPOSE = docker compose \
     -f $(CURDIR)/docker-compose.yml \
-    -f $(EXAMPLE_APPLICATION_DIR)/docker-compose.yml \
+    -f $(LOCAL_DIR)/docker-compose.yml \
     -f $(CURDIR)/.docker-compose-services-override.yml \
     -f $(CURDIR)/.docker-compose-networks-override.yml \
     -f $(CURDIR)/.docker-compose-gpu-override.yml
@@ -52,24 +51,28 @@ LOCAL_DOCKER_COMPOSE = docker compose \
 LOCAL_ANDROID_DOCKER_COMPOSE_SERVICES = \
   studio
 
--include local.mk
--include git.mk
+-include example-application.mk
 -include nodejs.mk
 -include go.mk
+-include git.mk
 
 node-modules: local-node-modules
 .PHONY: node-modules
 
-images: docker-images
+images: example-application-docker-images
 .PHONY: images
 
-images-ci: docker-images-ci
+images-ci: example-application-docker-images-ci
 .PHONY: images-ci
 
-images-pull: local-docker-images-pull-parallel local-android-docker-images-pull-parallel example-application-docker-images-pull-parallel
+images-pull: \
+local-docker-images-pull-parallel \
+example-application-docker-images-pull-parallel
 .PHONY: images-pull
 
-images-push: local-docker-images-push local-application-docker-images-push
+images-push: \
+local-docker-images-push \
+example-application-docker-images-push
 .PHONY: images-push
 
 dev: \
@@ -77,9 +80,13 @@ local-containers-up \
 local-android-containers-up \
 example-application-backend-container-up \
 example-application-mobile-container-up
+	@echo "🟢 Development environment is up and running."
 .PHONY: dev
 
-dev-rm: example-application-containers-rm local-containers-rm local-android-containers-rm
+dev-rm: \
+example-application-containers-rm \
+local-containers-rm \
+local-android-containers-rm
 .PHONY: dev-rm
 
 dev-ci: \
@@ -89,6 +96,33 @@ example-application-backend-container-up-ci \
 example-application-mobile-container-up-ci
 	@echo "🟢 Development environment is up and running in CI mode."
 .PHONY: dev-ci
+
+dev-ci-rm: \
+local-dev-container-image-pull \
+local-containers-rm-ci \
+example-application-containers-rm-ci
+.PHONY: dev-ci-rm
+
+logs: local-dev-container-logs-f
+.PHONY: logs
+
+containers-logs-ci: \
+local-containers-logs-ci \
+example-application-containers-logs-ci
+	@echo "✅ Retrieved CI containers logs successfully."
+.PHONY: containers-logs-ci
+
+functional-tests: local-robotframework-container-run
+	@echo "End-to-end tests completed successfully."
+.PHONY: functional-tests
+
+functional-tests-ci: example-application-tests-container-up
+	@echo "End-to-end tests completed successfully."
+.PHONY: functional-tests
+
+test-local: example-application-tests-robot-all
+	@echo "End-to-end tests completed successfully."
+.PHONY: test-local
 
 application-mobile-image-extract-android-artifacts: example-application-mobile-extract-android-artifacts
 	@echo "✅ Extracted Android release artifacts successfully."
@@ -104,30 +138,4 @@ application-mobile-screenshot: example-application-mobile-screenshot
 
 application-mobile-dump: example-application-mobile-dump
 	@echo "✅ Dumped mobile application successfully."
-.PHONY: application-mobile-dump
-
-dev-ci-rm: \
-local-dev-container-image-pull \
-local-containers-rm-ci \
-example-application-containers-rm-ci \
-local-docker-compose-network-rm-dev
-.PHONY: dev-ci-rm
-
-logs: local-dev-container-logs-f
-.PHONY: logs
-
-containers-logs-ci: local-containers-logs-ci example-application-containers-logs-ci
-	@echo "✅ Retrieved CI containers logs successfully."
-.PHONY: containers-logs-ci
-
-functional-tests: local-robotframework-tests-container-run
-	@echo "End-to-end tests completed successfully."
-.PHONY: functional-tests
-
-functional-tests-ci: example-application-tests-container-up
-	@echo "End-to-end tests completed successfully."
-.PHONY: functional-tests
-
-test-local: example-application-tests-robot-all
-	@echo "End-to-end tests completed successfully."
-.PHONY: test-local
+.PHONY: application-mobile-dum

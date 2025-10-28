@@ -1,4 +1,4 @@
-LOCAL_GO_VERSION = 1.24
+VEGITO_GO_VERSION = 1.24
 
 UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_M), x86_64)
@@ -13,42 +13,43 @@ ifeq ($(UNAME_M), aarch64)
   GOARCH = arm64
 endif
 
-LOCAL_GO_MODULES ?= \
-	example-application/backend \
-	firebase-emulators/auth_functions \
-	proxy
+VEGITO_EXAMPLE_APPLICATION_GO_MODULES = \
+	backend \
+	local/firebase-emulators/auth_functions \
+	local/proxy
 
-local-go-mod-tidy: $(LOCAL_GO_MODULES:%=local-go-%-mod-tidy)
-.PHONY: local-go-mod-tidy
+go-mod-tidy: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-tidy)
+.PHONY: go-mod-tidy
 
-$(LOCAL_GO_MODULES:%=local-go-%-mod-tidy):
-	@cd $(LOCAL_DIR)/$(@:local-go-%-mod-tidy=%) && go mod tidy -v -go=$(LOCAL_GO_VERSION)
-.PHONY: $(LOCAL_GO_MODULES:%=local-go-%-mod-tidy)
+$(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-tidy):
+	@cd $(VEGITO_EXAMPLE_APPLICATION_DIR)/$(@:example-application-go-%-mod-tidy=%) && go mod tidy -v -go=$(VEGITO_GO_VERSION)
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-tidy)
 
-local-go-mod-download: $(LOCAL_GO_MODULES:%=local-go-%-mod-download)
-.PHONY: local-go-mod-download
+go-mod-download: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-download)
+.PHONY: go-mod-download
 
-$(LOCAL_GO_MODULES:%=local-go-%-mod-download):
-	@cd $(LOCAL_DIR)/$(@:local-go-%-mod-download=%) && go mod download
-.PHONY: $(LOCAL_GO_MODULES:%=local-go-%-mod-download) 
+$(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-download):
+	@cd $(VEGITO_EXAMPLE_APPLICATION_DIR)/$(@:example-application-go-%-mod-download=%) && go mod download
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-download) 
 
-local-go-mod-upgrade: $(LOCAL_GO_MODULES:%=local-go-%-mod-upgrade)
-.PHONY: local-go-mod-upgrade
+go-mod-upgrade: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-upgrade)
+.PHONY: go-mod-upgrade
 
-$(LOCAL_GO_MODULES:%=local-go-%-mod-upgrade):
-	@cd $(LOCAL_DIR)/$(@:local-go-%-mod-upgrade=%) && rm -rf vendor && go get -u -v ./...
-.PHONY: $(LOCAL_GO_MODULES:%=local-go-%-mod-upgrade)
+$(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-upgrade):
+	@cd $(VEGITO_EXAMPLE_APPLICATION_DIR)/$(@:example-application-go-%-mod-upgrade=%) && rm -rf vendor && go get -u -v ./...
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-upgrade)
 
-local-go-mod-vendor: $(LOCAL_GO_MODULES:%=local-go-%-mod-vendor)
-.PHONY: local-go-mod-vendor
+go-mod-vendor: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor)
+.PHONY: go-mod-vendor
 
-local-go-mod-vendor-rm: $(LOCAL_GO_MODULES:%=local-go-%-mod-vendor-rm)
-.PHONY: local-go-mod-vendor-rm
+go-mod-vendor-rm: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor-rm)
+.PHONY: go-mod-vendor-rm
 
-$(LOCAL_GO_MODULES:%=local-go-%-mod-vendor):
-	@cd $(LOCAL_DIR)/$(@:local-go-%-mod-vendor=%) && go mod vendor -v
-.PHONY: $(LOCAL_GO_MODULES:%=local-go-%-mod-vendor) 
+$(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor):
+	@cd $(VEGITO_EXAMPLE_APPLICATION_DIR)/$(@:example-application-go-%-mod-vendor=%) && go mod vendor -v
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor) 
 
-$(LOCAL_GO_MODULES:%=local-go-%-mod-vendor-rm):
-	@rm -rf $(LOCAL_DIR)/$(@:local-go-%-mod-vendor-rm=%)/vendor
-.PHONY: $(LOCAL_GO_MODULES:%=local-go-%-mod-vendor-rm) 
+$(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor-rm):
+	@rm -rf $(VEGITO_EXAMPLE_APPLICATION_DIR)/$(@:example-application-go-%-mod-vendor-rm=%)/vendor
+.PHONY: $(VEGITO_EXAMPLE_APPLICATION_GO_MODULES:%=example-application-go-%-mod-vendor-rm) 
+

@@ -3,11 +3,11 @@
 # This script is run on the host as devcontainer 'initializeCommand' 
 # (cf. https://containers.dev/implementors/json_reference/#lifecycle-scripts)
 
-set -euo pipefail
+set -eu
 
 trap "echo Exited with code $?." EXIT
 
-export WORKING_DIR=${PWD}
+export WORKING_DIR=${WORKING_DIR:-${PWD}}
 
 # Initialize .envrc file
 envrcFile=${WORKING_DIR}/.devcontainer/.envrc
@@ -36,6 +36,8 @@ cat <<'EOF' > ${envrcFile}
 
 export VEGITO_PROJECT_USER=${VEGITO_PROJECT_USER:-local-user-id}
 export DEV_GOOGLE_CLOUD_PROJECT_ID=${DEV_GOOGLE_CLOUD_PROJECT_ID:-moov-dev-439608}
+export MAKE_DEV_ON_START=false
+export VEGITO_PROJECT_NAME=${VEGITO_PROJECT_NAME:-example-application}
 EOF
 fi
 
@@ -44,45 +46,55 @@ fi
 echo "Initializing .env file"
 ${WORKING_DIR}/dotenv.sh
 
+localDotenvFile=${WORKING_DIR}/.env
+
 # Vscode
-workspaceFile=${PWD}/vscode.code-workspace
+workspaceFile=${WORKING_DIR}/vscode.code-workspace
 [ -f $workspaceFile ] || cat <<'EOF' > $workspaceFile
 {
   "folders": [
     {
       "path": ".",
-      "name": "Project"
+      "name": "Application - Vegito"
     },
     {
-      "name": "Devcontainer",
-      "path": ".devcontainer"
+      "name": "E2E Tests - RobotFramework",
+      "path": "tests"
     },
     {
-      "name": "Local - Builder",
-      "path": "local"
+      "name": "Backend - Go",
+      "path": "backend"
     },
     {
-      "name": "Local - Firebase Emulators",
-      "path": "firebase-emulators"
+      "name": "Mobile - Flutter",
+      "path": "mobile"
     },
     {
-      "name": "Local - Android Studio",
-      "path": "android-studio"
+      "name": "Web - React",
+      "path": "frontend"
     },
     {
-      "name": "Local - Vault",
-      "path": "vault-dev"
+      "name": "Images - Cleaner - Go",
+      "path": "images/cleaner"
     },
     {
-      "name": "Local - Clarinet",
-      "path": "clarinet-devnet"
+      "name": "Images - Moderator - Go",
+      "path": "images/moderator"
+    },
+    {
+      "name": "Authentication - Firebase Auth",
+      "path": "firebase/functions"
+    },
+    {
+      "name": "Infrastructure - Terraform",
+      "path": "run"
     },
   ],
   "settings": {}
 }
 EOF
 
-backendLaunchDebug=${PWD}/example-application/backend/.vscode/launch.json
+backendLaunchDebug=${WORKING_DIR}/backend/.vscode/launch.json
 if [ ! -f $backendLaunchDebug ] ;  then
 mkdir -p $(dirname $backendLaunchDebug)
 cat <<'EOF' > $backendLaunchDebug
@@ -100,12 +112,12 @@ cat <<'EOF' > $backendLaunchDebug
             "program": "${workspaceFolder}",
             "env": {
                 "PORT": "8888",
-                "GOOGLE_APPLICATION_CREDENTIALS": "../../infra/environments/dev/google-cloud-credentials.json",
-                "UI_CONFIG_FIREBASE_SECRET_ID": "projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/firebase-config-web/versions/latest",
-                "UI_CONFIG_GOOGLEMAPS_SECRET_ID": "projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/googlemaps-web-api-key/versions/latest",
-                "STRIPE_KEY": "projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/stripe-key/versions/latest",
-                "FIREBASE_PROJECT_ID": "${GOOGLE_CLOUD_PROJECT_ID}",
-                "GCLOUD_PROJECT_ID": "${GOOGLE_CLOUD_PROJECT_ID}",
+                "GOOGLE_APPLICATION_CREDENTIALS": "../infra/environments/dev/gcloud-credentials.json",
+                "UI_CONFIG_FIREBASE_SECRET_ID": "projects/moov-dev-439608/secrets/firebase-config-web/versions/latest",
+                "UI_CONFIG_GOOGLEMAPS_SECRET_ID": "projects/moov-dev-439608/secrets/googlemaps-web-api-key/versions/latest",
+                "STRIPE_KEY": "projects/moov-dev-439608/secrets/stripe-key/versions/latest",
+                "FIREBASE_PROJECT_ID": "moov-dev-439608",
+                "GCLOUD_PROJECT_ID": "moov-dev-439608",
                 "FRONTEND_BUILD_DIR": "../frontend/build",
                 "FRONTEND_PUBLIC_DIR": "../frontend/public",
                 "UI_JAVASCRIPT_SOURCE_FILE": "../frontend/build/bundle.js",
@@ -115,17 +127,17 @@ cat <<'EOF' > $backendLaunchDebug
                 "VAULT_MIN_USER_RECOVERY_KEY_ROTATION_INTERVAL": "1s",
                 "FIREBASE_AUTH_EMULATOR_HOST": "localhost:9099",
                 "VEGETABLE_CREATED_IMAGES_MODERATOR_PUBSUB_TOPIC": "vegetable-images-created",
-                "VEGETABLE_VALIDATED_IMAGES_BACKEND_PUBSUB_SUBSCRIPTION": "vegetable-images-validated-backend",
+                "VEGETABLE_VALIDATED_IMAGES_BACKEND_PUBSUB_SUBSCRIPTION": "${env:LOCAL_FIREBASE_EMULATORS_PUBSUB_VEGETABLE_IMAGES_VALIDATED_BACKEND_SUBSCRIPTION_DEBUG}",
                 "VEGETABLE_VALIDATED_IMAGES_CDN_PREFIX_URL": "https://validated-images-cdn-prefix-url",
             },
-            "envFile": "${workspaceFolder}/../../.env",
+            "envFile": "${workspaceFolder}/../.env",
         }
     ]
 }
 EOF
 fi
 
-mobileLaunchDebug=${PWD}/example-application/mobile/.vscode/launch.json
+mobileLaunchDebug=${WORKING_DIR}/mobile/.vscode/launch.json
 if [ ! -f $mobileLaunchDebug ] ;  then
 mkdir -p $(dirname $mobileLaunchDebug)
 cat <<'EOF' > $mobileLaunchDebug
@@ -146,8 +158,8 @@ cat <<'EOF' > $mobileLaunchDebug
             "type": "dart",
             "flutterMode": "debug",
             "args": [
-              "--dart-define=APPLICATION_BACKEND_URL=http://10.0.2.2:8888",
-              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/${GOOGLE_CLOUD_PROJECT_ID}.firebasestorage.app/o",            ]
+              "--dart-define=VEGITO_BACKEND_URL=http://10.0.2.2:8888",
+              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/moov-dev-439608.firebasestorage.app/o",            ]
         },
         {
             "name": "mobile (profile mode)",
@@ -155,8 +167,8 @@ cat <<'EOF' > $mobileLaunchDebug
             "type": "dart",
             "flutterMode": "profile",
             "args": [
-              "--dart-define=APPLICATION_BACKEND_URL=http://10.0.2.2:8080",
-              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/${GOOGLE_CLOUD_PROJECT_ID}.firebasestorage.app/o",            ]
+              "--dart-define=VEGITO_BACKEND_URL=http://10.0.2.2:8080",
+              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/moov-dev-439608.firebasestorage.app/o",            ]
         },
         {
             "name": "mobile (release mode)",
@@ -164,15 +176,15 @@ cat <<'EOF' > $mobileLaunchDebug
             "type": "dart",
             "flutterMode": "release",
             "args": [
-              "--dart-define=APPLICATION_BACKEND_URL=http://10.0.2.2:8080",
-              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/${GOOGLE_CLOUD_PROJECT_ID}.firebasestorage.app/o",            ]
+              "--dart-define=VEGITO_BACKEND_URL=http://10.0.2.2:8080",
+              "--dart-define=FIREBASE_STORAGE_PUBLIC_PREFIX=http://10.0.2.2:9199/v0/b/moov-dev-439608.firebasestorage.app/o",            ]
         }
     ]
 }
 EOF
 fi
 
-CONTAINERS_CACHE_DIR=${PWD}/.containers
+CONTAINERS_CACHE_DIR=${WORKING_DIR}/.containers
 mkdir -p ${CONTAINERS_CACHE_DIR}
 
 # Cache of container 'dev'

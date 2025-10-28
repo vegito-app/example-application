@@ -1,57 +1,51 @@
-NODE_MODULES ?= \
-	$(EXAMPLE_APPLICATION_DIR)/frontend \
-	$(LOCAL_FIREBASE_EMULATORS_DIR)/auth_functions
+NODE_MODULES := \
+	$(VEGITO_EXAMPLE_APPLICATION_FRONTEND_DIR) \
+	$(VEGITO_EXAMPLE_APPLICATION_DIR)/firebase/functions \
+	$(VEGITO_EXAMPLE_APPLICATION_DIR)/firebase/functions/auth
 
-local-node-modules-npm-check-updates: 
+node-modules-npm-check-updates: 
 	@$(MAKE) -j $(NODE_MODULES:%=%-npm-check-updates)
-.PHONY: local-node-modules-npm-check-updates 
+.PHONY: node-modules-npm-check-updates 
 
-$(NODE_MODULES:%=local-%-npm-check-updates):
+$(NODE_MODULES:%=%-npm-check-updates):
 	@cd $(@:%-npm-check-updates=%) && ncu -u
 .PHONY: $(NODE_MODULES:%=%-npm-check-updates)
 
-local-node-modules-ci: 
-	@$(MAKE) $(NODE_MODULES:%=local-%-ci)
-.PHONY: local-node-modules-ci
+node-modules-ci: 
+	@$(MAKE) $(NODE_MODULES:%=%-ci)
+.PHONY: node-modules-ci
 
-$(NODE_MODULES:%=local-%-ci): 
+$(NODE_MODULES:%=%-ci): 
 	$(MAKE) $(@:%-ci=%-clean) $(@:%-ci=%-node-modules)
 .PHONY: $(NODE_MODULES:%=%-ci)
 
-local-node-modules-clean: $(NODE_MODULES:%=local-%-clean)
-.PHONY: local-node-modules-clean
+node-modules-clean: $(NODE_MODULES:%=%-clean)
+.PHONY: node-modules-clean
 
-$(NODE_MODULES:%=local-%-clean):
-	-rm -rf $(@:local-%-clean=%/node_modules) $(@:local-%-clean=%/package-lock.json) 2>/dev/null
-.PHONY: $(NODE_MODULES:%=local-%-clean)
+$(NODE_MODULES:%=%-clean):
+	-rm -rf $(@:%-clean=%/node_modules) $(@:%-clean=%/package-lock.json) 2>/dev/null
+.PHONY: $(NODE_MODULES:%=%-clean)
 
-local-node-modules: $(NODE_MODULES:%=%/node_modules)
-.PHONY: local-node-modules
+node-modules: $(NODE_MODULES:%=%/node_modules)
+.PHONY: node-modules
 
-$(NODE_MODULES:%=local-%-node-modules):
-	cd $(@:local-%-node-modules=%) && npm install
-.PHONY: $(NODE_MODULES:%=local-%-node-modules)
-
-local-node-modules-audit-fix: $(NODE_MODULES:%=local-%-node-modules-audit-fix)
-.PHONY: local-node-modules-audit-fix
-
-$(NODE_MODULES:%=local-%-node-modules-audit-fix):
-	cd $(@:local-%-node-modules-audit-fix=%) && npm audit fix
-.PHONY: $(NODE_MODULES:%=local-%-node-modules-audit-fix)
+$(NODE_MODULES:%=%-node-modules):
+	cd $(@:%-node-modules=%) && npm install
+.PHONY: $(NODE_MODULES:%=%-node-modules)
 
 $(NODE_MODULES:%=%/node_modules):
-	@$(MAKE) $(@:%/node_modules=local-%-node-modules)
+	@$(MAKE) $(@:%/node_modules=%-node-modules)
 
-local-node-available-from-nvm-ls-remote:
+node-available-from-nvm-ls-remote:
 	@bash -c ' \
 	  source $(NVM_DIR)/nvm.sh ; \
 	  nvm ls-remote \
 	'
-.PHONY: local-node-available-from-nvm-ls-remote
+.PHONY: node-available-from-nvm-ls-remote
 
-local-node-list-npm-versions:
+node-list-npm-versions:
 	@bash -c " \
 	  source $(NVM_DIR)/nvm.sh ; \
       npm view npm versions --json | jq -r '.[] | select(startswith(\"10.\"))' \
 	"
-.PHONY: local-node-list-npm-versions
+.PHONY: node-list-npm-versions

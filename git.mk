@@ -14,7 +14,7 @@ git-subtree-status:
 # VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH := subtree/$(VEGITO_PROJECT_NAME)-$(VERSION)
 VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH := subtree/$(VEGITO_PROJECT_NAME)-$(VEGITO_PROJECT_USER)-$(VERSION)
 
-VEGITO_APP_GIT_SUBTREE_REMOTES := gcloud example-application
+VEGITO_APP_GIT_SUBTREE_REMOTES := local
 
 $(VEGITO_APP_GIT_SUBTREE_REMOTES:%=git-subtree-%-remote-branch-rm):
 	@echo "🗑️ Removing the distribution branch..."
@@ -25,44 +25,34 @@ git-subtree-remote-branch-rm: $(VEGITO_APP_GIT_SUBTREE_REMOTES:%=git-subtree-%-r
 .PHONY: git-subtree-remote-branch-rm
 
 # ------------------------------------------
-# Subtree ./google-cloud
+# Subtree ./local
 # ------------------------------------------
-git-subtree-google-cloud-pull:
-	@echo "⬇︎ Pulling the gcloud subtree..."
-	@git subtree pull --prefix google-cloud \
-	  git@github.com:vegito-app/gcloud.git main --squash
-	@echo "Gcloud subtree pulled successfully."
-.PHONY: git-subtree-google-cloud-pull
+git-subtree-local-pull:
+	@echo "⬇︎ Pulling the local subtree..."
+	@git subtree pull --prefix local \
+	  git@github.com:vegito-app/local.git main --squash
+	@echo "Local subtree pulled successfully."
+.PHONY: git-subtree-local-pull
 
-git-subtree-google-cloud-push:
-	@echo "⬆︎ Pushing changes from the gcloud subtree..."
-	@git subtree push --prefix google-cloud \
-	  git@github.com:vegito-app/google-cloud.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
-	@echo "Google Cloud subtree pushed successfully."
-.PHONY: git-subtree-google-cloud-push
+git-subtree-local-push:
+	@echo "⬆︎ Pushing changes from the local subtree..."
+	@git subtree push --prefix local \
+	  git@github.com:vegito-app/local.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
+	@echo "Local subtree pushed successfully."
+.PHONY: git-subtree-local-push
 
+LOCAL_DIR := $(CURDIR)/local
+LOCAL_GO_MODULES := \
+	backend \
+	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR)/functions/auth \
+	proxy
+
+LOCAL_ROBOTFRAMEWORK_TESTS_DIR := $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
+LOCAL_CLARINET_DEVNET_IMAGE := $(LOCAL_CLARINET_DEVNET_IMAGE_LATEST)
+LOCAL_FIREBASE_EMULATORS_IMAGE := $(LOCAL_FIREBASE_EMULATORS_IMAGE_LATEST)
+LOCAL_VAULT_DEV_IMAGE := $(LOCAL_VAULT_DEV_IMAGE_LATEST)
+
+-include $(LOCAL_DIR)/local.mk
 GOOGLE_CLOUD_DIR := $(LOCAL_DIR)/gcloud
 -include $(GOOGLE_CLOUD_DIR)/gcloud.mk
-# ------------------------------------------
-
-# ------------------------------------------
-# Subtree ./example-application
-# ------------------------------------------
-git-subtree-example-application-pull:
-	@echo "⬇︎ Pulling the example-application subtree..."
-	@git subtree pull --prefix example-application \
-	  git@github.com:vegito-app/example-application.git main --squash
-	@echo "Example Application subtree pulled successfully."
-.PHONY: git-subtree-example-application-pull
-
-git-subtree-example-application-push:
-	@echo "⬆︎ Pushing changes from the example-application subtree..."
-	@git subtree push --prefix example-application \
-	  git@github.com:vegito-app/example-application.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
-	@echo "Example application subtree pushed successfully."
-.PHONY: git-subtree-example-application-push
-
-EXAMPLE_APPLICATION_DIR = $(LOCAL_DIR)/example-application
-
--include $(EXAMPLE_APPLICATION_DIR)/example-application.mk
-# ------------------------------------------
+# ----------------------------------------------------------
