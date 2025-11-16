@@ -8,12 +8,12 @@ on:
   push:
     branches: [main]
 jobs:
-  version:
-    name: Generate Version and Changelog
-    uses: ./.github/workflows/version.yml
+  # version:
+  #   name: Generate Version and Changelog
+  #   uses: ./.github/workflows/version.yml
 
   build:
-    needs: version
+    # needs: version
     name: Build and Push Images
     uses: ./.github/workflows/build-images.yml
     strategy:
@@ -22,7 +22,7 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
       environment: ${{ matrix.environment }}
-      use_registry_cache: true
+      # use_registry_cache: true
       android_release_keystore_path: example-application/mobile/android/release-key.keystore
       android_release_keystore_base64_path: example-application/mobile/android/release-key.keystore.base64
       android_release_keystore_store_pass_base64_path: example-application/mobile/android/release-key.keystore.storepass.base64
@@ -54,7 +54,7 @@ jobs:
     needs:
       - build
       - test
-      - version
+      # - version
     name: Application Release Build 🚀
     uses: ./.github/workflows/application-release-template.yml
     with:
