@@ -40,7 +40,7 @@ variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_REGISTRY_CACHE_CI" {
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_BUILDER_IMAGE" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-flutter-${VERSION}"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-flutter-${LOCAL_VERSION}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_BUILDER_IMAGE_LATEST" {
@@ -50,7 +50,7 @@ variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_BUILDER_IMAGE_LATEST" {
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_RUNNER_APPIUM_IMAGE" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-appium-${VERSION}"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-appium-${LOCAL_VERSION}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_RUNNER_APPIUM_IMAGE_LATEST" {
