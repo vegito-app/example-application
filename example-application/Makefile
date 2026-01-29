@@ -96,7 +96,8 @@ dev-ci: \
 images-pull \
 local-containers-up-ci \
 example-application-backend-container-up-ci \
-example-application-mobile-container-up-ci
+example-application-mobile-container-up-ci \
+local-android-emulator-wait-for-boot
 	@echo "🟢 Development environment is up and running in CI mode."
 .PHONY: dev-ci
 
@@ -116,7 +117,7 @@ example-application-containers-logs-ci
 	@echo "✅ Retrieved CI containers logs successfully."
 .PHONY: containers-logs-ci
 
-functional-tests: local-robotframework-container-run
+functional-tests: local-robotframework-container-exec
 	@echo "End-to-end tests completed successfully."
 .PHONY: functional-tests
 

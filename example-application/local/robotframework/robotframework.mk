@@ -13,8 +13,8 @@ local-robotframework-container-up: local-robotframework-container-rm
 
 ROBOT ?= $(LOCAL_DOCKER_COMPOSE) exec robotframework robot
 
-local-robotframework-container-run:
+local-robotframework-container-exec:
 	@echo "📝 Running robotframework..."
-	@$(ROBOT) --outputdir $(LOCAL_ROBOTFRAMEWORK_TESTS_DIR) robot
+	@$(LOCAL_ROBOTFRAMEWORK_ROBOT) --outputdir $(LOCAL_ROBOTFRAMEWORK_TESTS_DIR) robot
 .PHONY: robotframework-container-run
 
