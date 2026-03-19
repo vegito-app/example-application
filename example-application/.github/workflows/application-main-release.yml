@@ -1,0 +1,54 @@
+name: Vegito Release
+
+permissions:
+  id-token: write
+  contents: write
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  pipeline:
+    uses: vegito-app/local/.github/workflows/application-pipeline.yml@main
+
+    with:
+      environment: dev
+      functional_tests_dir: example-application/tests/output
+      images_to_scan: '["example-application-backend"]'
+      project: vegito-local
+      android_release_keystore_path: example-application/mobile/android/release-key.keystore
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_STORE_PASS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_STORE_PASS }}
+      ANDROID_RELEASE_KEYSTORE: ${{ secrets.ANDROID_RELEASE_KEYSTORE }}
+      FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
+      FACEBOOK_CLIENT_TOKEN: ${{ secrets.FACEBOOK_CLIENT_TOKEN }}
+      GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+      GOOGLE_CLOUD_PROJECT_NUMBER: ${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}
+      GOOGLE_CLOUD_SA_KEY_GITHUB_ACTIONS_MAIN: github-actions-main@${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}.iam.gserviceaccount.com
+      GOOGLE_CLOUD_SA_KEY_GITHUB_ACTIONS_RELEASE_READER: github-actions-release-reader@${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ vars.WORKLOAD_IDENTITY_POOL_ID }}/providers/${{ vars.WORKLOAD_IDENTITY_PROVIDER_ID }}
+
+  build-staging-prod:
+    name: Build Images
+    needs: pipeline
+    uses: vegito-app/local/.github/workflows/build-images.yml@main
+
+    strategy:
+      matrix:
+        environment: [staging, prod]
+
+    with:
+      version: ${{ needs.pipeline.outputs.version }}
+      environment: ${{ matrix.environment }}
+      android_release_keystore_path: example-application/mobile/android/release-key.keystore
+
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_STORE_PASS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_STORE_PASS }}
+      ANDROID_RELEASE_KEYSTORE: ${{ secrets.ANDROID_RELEASE_KEYSTORE }}
+      FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
+      FACEBOOK_CLIENT_TOKEN: ${{ secrets.FACEBOOK_CLIENT_TOKEN }}
+      GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+      GOOGLE_CLOUD_PROJECT_NUMBER: ${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}
+      GOOGLE_CLOUD_SA_KEY_GITHUB_ACTIONS_MAIN: github-actions-main@${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ vars.WORKLOAD_IDENTITY_POOL_ID }}/providers/${{ vars.WORKLOAD_IDENTITY_PROVIDER_ID }}

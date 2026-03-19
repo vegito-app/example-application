@@ -40,7 +40,7 @@ if [[ -z "$apk_path" ]]; then
     exit 1
   fi
 fi
-avd_name="${LOCAL_ANDROID_AVD_NAME:-Pixel_8_Pro}"
+avd_name="${LOCAL_ANDROID_EMULATOR_AVD_NAME:-Pixel_8_Pro}"
 gpu_mode="${LOCAL_ANDROID_gpu_mode:-swiftshader_indirect}"
 
 # 📛 Détection du nom du package si non fourni
@@ -119,9 +119,9 @@ emulator-data-load.sh "${emulator_data}"
 
 
 # 🔐 Injection du token App Check si fourni
-if [[ "$apk_path" == *"release.apk" && -n "$FIREBASE_APP_CHECK_DEBUG_TOKEN" ]]; then
+if [[ "$apk_path" == *"release.apk" && -n "${FIREBASE_APP_CHECK_DEBUG_TOKEN:-}" ]]; then
   echo "💠 App Check debug token detected. Injecting..."
-  echo "FIREBASE_APP_CHECK_DEBUG_TOKEN=$FIREBASE_APP_CHECK_DEBUG_TOKEN" > /data/local/tmp/app_check.env
+  echo "FIREBASE_APP_CHECK_DEBUG_TOKEN=${FIREBASE_APP_CHECK_DEBUG_TOKEN:-}" > /data/local/tmp/app_check.env
 fi
 
 echo "Checking if an APK is present and installing..."
@@ -129,19 +129,15 @@ if [ -f "${apk_path}" ]; then
   echo "APK found ${package_name} ${apk_path}, attempting installation..."
   if adb install -r "${apk_path}"; then
     echo "✅ APK installed ${package_name}."
-
     echo "🚀 Attempting to launch the app..."
     adb shell monkey -p "${package_name}" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
-
     sleep 2
-
     if adb shell pidof "${package_name}" >/dev/null; then
       echo "✅ App is running."
     else
       echo "⚠️ App did not launch. Trying again..."
       adb shell monkey -p "${package_name}" -c android.intent.category.LAUNCHER 1
     fi
-
   else
     echo "❌ APK installation failed."
   fi

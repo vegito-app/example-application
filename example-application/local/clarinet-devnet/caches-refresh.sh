@@ -7,9 +7,9 @@ caches_refresh_success=false
 # 🧹 Function called at the end of the script to check for success
 check_success() {
     if [ $caches_refresh_success = true ]; then
-        echo "♻️ Android Studio caches refreshed successfully."
+        echo "♻️ Clarinet Devnet caches refreshed successfully."
     else
-        echo "❌ Android Studio caches refresh failed."
+        echo "❌ Clarinet Devnet caches refresh failed."
     fi
 }
 
@@ -50,15 +50,5 @@ if [ -f "$GIT_CONFIG_GLOBAL" ]; then
 fi
 
 clarinet_devnet_dir=${LOCAL_CLARINET_DEVNET_DIR:-${PWD}}
-
-# Create symlinks for scripts
-for script in `ls ${clarinet_devnet_dir}/*.sh`; \
-do
-    filename=${clarinet_devnet_dir}/${script}
-    if [ -f "${filename}" ]; then
-        echo "Linking ${script} to /usr/local/bin/${script} for easy access"
-        sudo ln -sf ${filename} /usr/local/bin/${script}
-    fi
-done
 
 caches_refresh_success=true

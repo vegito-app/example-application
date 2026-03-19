@@ -1,35 +1,30 @@
-name: Version Management
+name: Version Changelog (Reusable)
+
 on:
   workflow_call:
     outputs:
       version:
-        description: "Version number generated"
-        value: ${{ jobs.define_version.outputs.version }}
+        description: "Computed semantic version"
+        value: ${{ jobs.calc.outputs.version }}
       changelog:
         description: "Generated changelog content"
-        value: ${{ jobs.define_version.outputs.changelog }}
+        value: ${{ jobs.calc.outputs.changelog }}
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  define_version:
-    name: Define VERSION ✨
+  calc:
     runs-on: self-hosted
     outputs:
       version: ${{ steps.define_version.outputs.VERSION }}
       changelog: ${{ steps.define_version.outputs.CHANGELOG_NEW }}
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Ensure fresh .env
-        run: |
-          rm -f .env
-          ./dotenv.sh
-
+          
       - name: Define VERSION and Tag 🏷
         id: define_version
         run: |
@@ -47,18 +42,19 @@ jobs:
           cat CHANGELOG.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           echo "📝 CHANGELOG (new only):"
-          VERSION=$(git describe --tags --abbrev=7 --match 'v*')
+          # Determine version safely even if no tags exist yet
+          if git describe --tags --abbrev=0 --match 'v*' >/dev/null 2>&1; then
+            VERSION=$(git describe --tags --abbrev=0 --match 'v*')
+          else
+            # First release fallback when no tags exist
+            VERSION="v0.1.0"
+          fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-          echo "✅ Created tag: $VERSION"
+          echo "📦 Prepared version: $VERSION (not pushed)"
 
+      - run: echo "📦 Version = ${{ steps.define_version.outputs.VERSION }}"
       - name: Show New Changes log
         run: |
-          cat CHANGELOG.md
-
-      - name: Upload New Changes Changelog
-        uses: actions/upload-artifact@v4
-        with:
-          name: version-changelog
-          path: |
-            CHANGELOG.md
+          echo "📝 Changelog:"
+          echo " ${{ steps.define_version.outputs.CHANGELOG_NEW }}"
