@@ -1,4 +1,4 @@
-GIT_SUBTREE_DIRS := gcloud
+GIT_SUBTREE_DIRS := local
 
 git-subtree-pull: $(GIT_SUBTREE_DIRS:%=git-subtree-%-pull)
 .PHONY: git-subtree-pull
