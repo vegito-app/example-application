@@ -6,24 +6,16 @@
     "./docker-compose.yml",
     "../.docker-compose-services-override.yml",
     "../.docker-compose-networks-override.yml",
-    "../.docker-compose-gpu-override.yml",
-    "./docker-compose.yml",
-    "./docker-compose-vscode.yml"
+    "../.docker-compose-gpu-override.yml"
   ],
   "runServices": [
     "dev"
   ],
   "containerEnv": {
-    // "MAKE_DEV_ON_START": "true",
-    "MAKE_TESTS_ON_START": "false",
     "FLUTTER_ROOT": "${localWorkspaceFolder}/.containers/android-studio/flutter",
-    "DEV_GOOGLE_CLOUD_PROJECT_ID": "moov-dev-439608",
-    "LOCAL_ANDROID_STUDIO_CACHES_REFRESH": "true",
-    "LOCAL_ANDROID_STUDIO_CONTAINER_CACHE": "${localWorkspaceFolder}/.containers/android-studio",
-    "LOCAL_ANDROID_STUDIO_ON_START": "true",
-    "LOCAL_CLARINET_DEVNET_CACHES_REFRESH": "true",
     "LOCAL_CONTAINER_INSTALL": "true",
-    "LOCAL_ROBOTFRAMEWORK_CACHES_REFRESH": "true"
+    "MAKE_DEV_ON_START": "true",
+    "MAKE_TESTS_ON_START": "true"
   },
   "service": "dev",
   "initializeCommand": "${localWorkspaceFolder}/.devcontainer/initialize-cmd.sh",
@@ -39,9 +31,7 @@
         "**/.devcontainer": false,
         "**/.containers": true,
         "**/.next": true,
-        "**/.cache": true,
-        "**/.terraform": true,
-        "**/.dart_tool": true
+        "**/.cache": true
       },
       // 💤 Désactive la surveillance en temps réel sur ces dossiers
       "files.watcherExclude": {
@@ -49,12 +39,7 @@
         "**/dist/**": true,
         "**/build/**": true,
         "**/.git/**": true,
-        "**/.cache/**": true,
-        "**/.terraform/**": true,
-        "**/.dart_tool/**": true,
-        "**/.flutter/**": true,
-        "**/.gradle/**": true,
-        "**/.containers/**": true
+        "**/.cache/**": true
       },
       // 💨 (optionnel) Réduit la charge sur la recherche globale
       "search.followSymlinks": false,
@@ -81,7 +66,6 @@
           "color": "terminal.ansiRed"
         }
       },
-      "robotcode.disableExtension": true,
       "diffEditor.hideUnchangedRegions.enabled": false,
       "workbench.activityBar.location": "top",
       "window.customTitleBarVisibility": "windowed",
@@ -122,7 +106,6 @@
         "dart.flutterSdkPath": "${localWorkspaceFolder}/local/.containers/android-studio/flutter",
         "workbench.activityBar.location": "top"
       },
-      "remote.SSH.localServerDownload": "off",
       "remote.portsAttributes": {
         "2375": {
           "label": "Devcontainer - Host - Docker Socket",
@@ -194,7 +177,7 @@
           "onAutoForward": "silent"
         },
         "8900": {
-          "label": "VNC - X server - Vegito Mobile - Android",
+          "label": "VNC - X server - Application Mobile - Android",
           "onAutoForward": "silent"
         },
         "6901": {
@@ -206,7 +189,7 @@
           "onAutoForward": "silent"
         },
         "8901": {
-          "label": "Xpra - X server - Vegito Mobile - Android",
+          "label": "Xpra - X server - Application Mobile - Android",
           "onAutoForward": "silent"
         },
         "8200": {
@@ -260,9 +243,7 @@
         "bierner.markdown-mermaid",
         "ChFlick.firecode",
         "circlecodesolution.ccs-flutter-color",
-        // "codeium.codeium",
-        "d-biehl.robotcode-gherkin",
-        "d-biehl.robotcode",
+        "codeium.codeium",
         "dart-code.dart-code",
         "dart-code.dart-test-adapter",
         "dart-code.flutter",
