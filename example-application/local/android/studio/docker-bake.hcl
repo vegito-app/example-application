@@ -11,11 +11,7 @@ variable "LOCAL_ANDROID_STUDIO_IMAGE_LATEST" {
 }
 
 variable "LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}/cache/android-studio"
-}
-
-variable "LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE_CI" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}/cache/android-studio/ci"
+  default = "${VEGITO_LOCAL_CACHE_IMAGES_BASE}/android-studio"
 }
 
 variable "LOCAL_ANDROID_STUDIO_IMAGE_DOCKER_BUILDX_LOCAL_CACHE" {
@@ -38,8 +34,8 @@ variable "ANDROID_STUDIO_VERSION" {
 
 target "local-android-studio-ci" {
   args = {
-    android_studio_version    = ANDROID_STUDIO_VERSION
-    android_apk_builder_image = LOCAL_ANDROID_FLUTTER_IMAGE_LATEST
+    android_studio_version = ANDROID_STUDIO_VERSION
+    flutter                = LOCAL_ANDROID_FLUTTER_IMAGE_LATEST
   }
   context = LOCAL_ANDROID_STUDIO_DIR
   contexts = {
@@ -50,21 +46,21 @@ target "local-android-studio-ci" {
     LOCAL_ANDROID_STUDIO_VERSION,
   ]
   cache-from = [
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE_CI}" : "",
+    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE}" : "",
     "type=inline,ref=${LOCAL_ANDROID_STUDIO_IMAGE_LATEST}",
     LOCAL_ANDROID_STUDIO_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ,
   ]
   cache-to = [
-    # USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE_CI},mode=max" : "type=inline"
-    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE_CI},mode=max" : LOCAL_ANDROID_STUDIO_IMAGE_DOCKER_BUILDX_CACHE_WRITE
+    # USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE},mode=max" : "type=inline"
+    USE_REGISTRY_CACHE ? "type=registry,ref=${LOCAL_ANDROID_STUDIO_IMAGE_REGISTRY_CACHE},mode=max" : LOCAL_ANDROID_STUDIO_IMAGE_DOCKER_BUILDX_CACHE_WRITE
   ]
   platforms = platforms
 }
 
 target "local-android-studio" {
   args = {
-    android_studio_version    = ANDROID_STUDIO_VERSION
-    android_apk_builder_image = LOCAL_ANDROID_FLUTTER_IMAGE_LATEST
+    android_studio_version = ANDROID_STUDIO_VERSION
+    flutter                = LOCAL_ANDROID_FLUTTER_IMAGE_LATEST
   }
   context = LOCAL_ANDROID_STUDIO_DIR
   contexts = {
