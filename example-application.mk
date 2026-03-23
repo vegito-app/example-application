@@ -20,20 +20,25 @@ EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS ?= \
   services \
   applications
 
-example-application-docker-images-host-arch: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS:%=vegito-example-application-%)
+example-application-docker-images-host-arch: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS:%=example-application-%)
 .PHONY: example-application-docker-images-host-arch
+
+$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS:%=example-application-%): docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%=vegito-%)
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push $(@:%=vegito-%)
+.PHONY: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS:%=example-application-%)
 
 EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI ?= \
   builders \
   services \
   applications
 
-$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=vegito-example-application-%-ci): docker-buildx-setup
-	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $@
-	@$(LOCAL_DOCKER_BUILDX_BAKE) --push $@
-.PHONY: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=vegito-example-application-%-ci)
+$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=example-application-%-ci): docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%=vegito-%)
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push $(@:%=vegito-%)
+.PHONY: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=example-application-%-ci)
 
-example-application-docker-images-multi-arch: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=vegito-example-application-%-ci)
+example-application-docker-images-multi-arch: $(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES_GROUPS_CI:%=example-application-%-ci)
 .PHONY: example-application-docker-images-multi-arch
 
 APPLICATION_DOCKER_BUILDX_BAKE_IMAGES := \
