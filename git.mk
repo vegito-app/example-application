@@ -57,7 +57,7 @@ LOCAL_DOCKER_BUILDX_BAKE = docker buildx bake \
 	$(LOCAL_ANDROID_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_ANDROID_DIR)/%/docker-bake.hcl) \
 	-f $(CURDIR)/docker-bake.hcl \
 	-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/docker-bake.hcl \
-	$(APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
+	$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
 	-f $(LOCAL_DIR)/github-actions/docker-bake.hcl
 
 LOCAL_DOCKER_COMPOSE = docker compose \
