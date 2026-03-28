@@ -3,10 +3,10 @@ variable "VEGITO_EXAMPLE_APPLICATION_TESTS_DIR" {
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGES_BASE" {
-  default = "${EXAMPLE_APPLICATION_PUBLIC_IMAGES_BASE}:tests"
+  default = "${VEGITO_EXAMPLE_APPLICATION_PUBLIC_IMAGES_BASE}:tests"
 }
 
-variable "VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE_VERSION" {
+variable "VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE" {
   # default = notequal("latest", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:tests-${VERSION}" : ""
   default = "${VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGES_BASE}-${VERSION}"
 }
@@ -47,7 +47,7 @@ target "vegito-example-application-tests-version-ci" {
   context    = VEGITO_EXAMPLE_APPLICATION_TESTS_DIR
   dockerfile = "Dockerfile"
   tags = [
-    VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE_VERSION,
+    VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE,
   ]
   cache-from = [
     USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE_REGISTRY_CACHE}" : "",
@@ -64,7 +64,7 @@ target "vegito-example-application-tests" {
     robotframework_image = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:robotframework-${LOCAL_VERSION}"
   }
   tags = [
-    VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE_VERSION,
+    VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE,
     VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE_LATEST,
   ]
   cache-from = [

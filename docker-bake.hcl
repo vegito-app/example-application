@@ -13,7 +13,7 @@ variable "INFRA_ENV" {
   default     = "dev"
 }
 
-variable "EXAMPLE_APPLICATION_PUBLIC_IMAGES_BASE" {
+variable "VEGITO_EXAMPLE_APPLICATION_PUBLIC_IMAGES_BASE" {
   default = "${VEGITO_PUBLIC_REPOSITORY}/example-application"
 }
 
