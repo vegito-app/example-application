@@ -1,5 +1,4 @@
 GOOGLE_CLOUD_PROJECT_NAME_BASE := moov
-GOOGLE_CLOUD_REGION ?= europe-west1
 
 INFRA_ENV ?= dev
 
