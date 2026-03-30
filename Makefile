@@ -34,10 +34,15 @@ vegito-example-application-builders-ci \
 example-application-docker-images-multi-arch
 .PHONY: images-ci
 
-images-pull: \
+images-pull-ci: \
 local-docker-images-pull-parallel \
 example-application-docker-images-pull-parallel
 .PHONY: images-pull
+
+images-pull-ci:
+	@$(MAKE) images-pull \
+	  LOCAL_DOCKER_COMPOSE_SERVICES=$(LOCAL_DOCKER_COMPOSE_SERVICES_CI)
+.PHONY: images-pull-ci
 
 images-push: \
 local-docker-images-push \
@@ -59,7 +64,7 @@ local-android-containers-rm
 .PHONY: dev-rm
 
 dev-ci: \
-images-pull \
+images-pull-ci \
 local-containers-up-ci \
 example-application-backend-container-up-ci \
 example-application-mobile-container-up-ci \
