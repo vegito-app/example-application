@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/vegito-app/example-application/compare/v1.5.0...v1.6.0) (2026-03-31)
+
+
+### Features
+
+* **docker-bake:** add CI target group and rename groups for clarity ([f9f6a92](https://github.com/vegito-app/example-application/commit/f9f6a92433383ed9a8ab9c16aae4204ac4dfb65f))
+
 ## [1.5.0](https://github.com/vegito-app/example-application/compare/v1.4.2...v1.5.0) (2026-03-28)
 
 ### Features
