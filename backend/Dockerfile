@@ -1,5 +1,4 @@
-ARG builder_image="vegito-local:local-builder-latest"
-FROM ${builder_image} AS build
+FROM gobuilder AS build
 
 RUN mkdir ${HOME}/src ${HOME}/src/local
 WORKDIR ${HOME}/src
