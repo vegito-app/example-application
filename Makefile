@@ -29,9 +29,7 @@ dotenv: example-application-dotenv
 images: example-application-docker-images-host-arch
 .PHONY: images
 
-images-ci: \
-vegito-example-application-builders-ci \
-example-application-docker-images-multi-arch
+images-ci: example-application-release-ci
 .PHONY: images-ci
 
 images-pull-ci: \
