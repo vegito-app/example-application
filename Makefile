@@ -12,6 +12,8 @@ VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
 # Version of the vegito-app/local development environment images to use.
 LOCAL_VERSION ?= v1.18.0
 
+LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):robotframework-$(LOCAL_VERSION)
+
 export
 
 -include gcloud.mk
