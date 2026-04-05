@@ -18,6 +18,7 @@ export
 
 -include gcloud.mk
 -include example-application.mk
+-include local.mk
 -include nodejs.mk
 -include go.mk
 -include git.mk
