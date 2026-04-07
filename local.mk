@@ -1,5 +1,5 @@
 # Version of the vegito-app/local development environment images to use:
-LOCAL_VERSION ?= v1.20.0
+LOCAL_VERSION ?= v1.20.1
 # ------------------------------------------
 # Subtree ./local
 # ___________________________________________
@@ -10,7 +10,7 @@ LOCAL_VERSION ?= v1.20.0
 git-subtree-local-pull:
 	@echo "⬇︎ Pulling the local subtree..."
 	@git subtree pull --prefix local \
-	  git@github.com:vegito-app/local.git $(LOCAL_VERSION) --squash
+	  git@github.com:vegito-app/local.git main --squash
 	@echo "Local subtree pulled successfully."
 .PHONY: git-subtree-local-pull
 
@@ -71,6 +71,6 @@ LOCAL_DOCKER_COMPOSE_SERVICES ?= \
 # Android High-Level targets
 -include $(LOCAL_DIR)/android.mk
 
-GOOGLE_CLOUD_DIR ?= $(LOCAL_DIR)/gcloud
--include $(GOOGLE_CLOUD_DIR)/gcloud.mk
+VEGITO_GCLOUD_DIR ?= $(LOCAL_DIR)/gcloud
+-include $(VEGITO_GCLOUD_DIR)/gcloud.mk
 # ----------------------------------------------------------
