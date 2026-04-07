@@ -9,14 +9,16 @@ endif
 
 VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
 
+# Version of the vegito-app/local development environment images to use.
+LOCAL_VERSION ?= v1.18.0
+
 export
 
--include example-application.mk
--include local.mk
 -include gcloud.mk
--include git.mk
+-include example-application.mk
 -include nodejs.mk
 -include go.mk
+-include git.mk
 
 node-modules: local-node-modules
 .PHONY: node-modules
@@ -27,7 +29,9 @@ dotenv: example-application-dotenv
 images: example-application-docker-images-host-arch
 .PHONY: images
 
-images-ci: example-application-release-ci
+images-ci: \
+vegito-example-application-builders-ci \
+example-application-docker-images-multi-arch
 .PHONY: images-ci
 
 images-pull-ci: \
