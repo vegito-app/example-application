@@ -1,11 +1,16 @@
-
+# Version of the vegito-app/local development environment images to use:
+LOCAL_VERSION ?= v1.20.0
 # ------------------------------------------
 # Subtree ./local
-# ------------------------------------------
+# ___________________________________________
+#
+# This section manages the local subtree, which contains local development tools and configurations.
+# It allows for pulling and pushing changes to a separate local repository.
+#------------------------------------------
 git-subtree-local-pull:
 	@echo "⬇︎ Pulling the local subtree..."
 	@git subtree pull --prefix local \
-	  git@github.com:vegito-app/local.git main --squash
+	  git@github.com:vegito-app/local.git $(LOCAL_VERSION) --squash
 	@echo "Local subtree pulled successfully."
 .PHONY: git-subtree-local-pull
 
@@ -15,14 +20,17 @@ git-subtree-local-push:
 	  git@github.com:vegito-app/local.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
 	@echo "Local subtree pushed successfully."
 .PHONY: git-subtree-local-push
+# ------------------------------------------
 
-LOCAL_DIR := $(CURDIR)/local
-LOCAL_GO_MODULES := \
+LOCAL_DIR ?= $(CURDIR)/local
+
+LOCAL_GO_MODULES ?= \
 	backend \
 	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR)/auth_functions \
 	proxy
 
-LOCAL_ROBOTFRAMEWORK_TESTS_DIR := $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
+LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):robotframework-$(LOCAL_VERSION)
+LOCAL_ROBOTFRAMEWORK_TESTS_DIR ?= $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
 LOCAL_BUILDER_IMAGE_VERSION=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):builder-${LOCAL_VERSION}
 
 LOCAL_DOCKER_BUILDX_BAKE = docker buildx bake \
@@ -63,6 +71,6 @@ LOCAL_DOCKER_COMPOSE_SERVICES ?= \
 # Android High-Level targets
 -include $(LOCAL_DIR)/android.mk
 
-GOOGLE_CLOUD_DIR := $(LOCAL_DIR)/gcloud
+GOOGLE_CLOUD_DIR ?= $(LOCAL_DIR)/gcloud
 -include $(GOOGLE_CLOUD_DIR)/gcloud.mk
 # ----------------------------------------------------------
