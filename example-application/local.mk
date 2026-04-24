@@ -1,5 +1,5 @@
 # Version of the vegito-app/local development environment images to use:
-LOCAL_VERSION ?= v1.20.0
+LOCAL_VERSION ?= v1.20.1
 # ------------------------------------------
 # Subtree ./local
 # ___________________________________________
@@ -25,10 +25,11 @@ git-subtree-local-push:
 LOCAL_DIR ?= $(CURDIR)/local
 
 LOCAL_GO_MODULES ?= \
-	backend \
-	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR)/auth_functions \
-	proxy
+	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR) \
+	proxy \
+	$(VEGITO_EXAMPLE_APPLICATION_BACKEND_DIR)
 
+LOCAL_GO_MODULES = \
 LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):robotframework-$(LOCAL_VERSION)
 LOCAL_ROBOTFRAMEWORK_TESTS_DIR ?= $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
 LOCAL_BUILDER_IMAGE_VERSION=$(VEGITO_LOCAL_PUBLIC_IMAGES_BASE):builder-${LOCAL_VERSION}
@@ -55,11 +56,6 @@ LOCAL_DOCKER_COMPOSE = docker compose \
 LOCAL_ANDROID_DOCKER_COMPOSE_SERVICES = \
   studio
 
-LOCAL_GO_MODULES = \
-	firebase-emulators/auth_functions \
-	proxy \
-	$(VEGITO_EXAMPLE_APPLICATION_BACKEND_DIR)
-
 LOCAL_DOCKER_COMPOSE_SERVICES ?= \
   firebase-emulators \
   robotframework \
@@ -71,6 +67,6 @@ LOCAL_DOCKER_COMPOSE_SERVICES ?= \
 # Android High-Level targets
 -include $(LOCAL_DIR)/android.mk
 
-GOOGLE_CLOUD_DIR ?= $(LOCAL_DIR)/gcloud
--include $(GOOGLE_CLOUD_DIR)/gcloud.mk
+VEGITO_GCLOUD_DIR ?= $(LOCAL_DIR)/gcloud
+-include $(VEGITO_GCLOUD_DIR)/gcloud.mk
 # ----------------------------------------------------------
