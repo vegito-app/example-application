@@ -10,7 +10,7 @@ on:
 
 jobs:
   pipeline:
-    uses: vegito-app/local/.github/workflows/application-pipeline.yml@v1.22.0
+    uses: vegito-app/local/.github/workflows/application-pipeline.yml@main
 
     with:
       environment: dev
@@ -19,6 +19,7 @@ jobs:
       project: example-application
       android_release_keystore_path: mobile/android/release-key.keystore
       use_registry_cache: ${{ vars.USE_REGISTRY_CACHE == 'true' }}
+      docker_registry_mode: dockerhub
       env_bucket_map: |
         dev: vegito-app-dev-github-actions-ci-artifacts
         staging: vegito-app-staging-github-actions-ci-artifacts
@@ -41,7 +42,7 @@ jobs:
   build-staging-prod:
     name: Build Images
     needs: pipeline
-    uses: vegito-app/local/.github/workflows/build-images.yml@v1.22.0
+    uses: vegito-app/local/.github/workflows/build-images.yml@main
 
     strategy:
       matrix:
@@ -52,7 +53,7 @@ jobs:
       environment: ${{ matrix.environment }}
       android_release_keystore_path: mobile/android/release-key.keystore
       use_registry_cache: ${{ vars.USE_REGISTRY_CACHE == 'true' }}
-
+      docker_registry_mode: dockerhub
       env_bucket_map: |
         staging: vegito-app-staging-github-actions-ci-artifacts
         prod: vegito-app-prod-github-actions-ci-artifacts
