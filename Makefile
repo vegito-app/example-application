@@ -1,5 +1,4 @@
 VEGITO_PROJECT_NAME := example-application
-LOCAL_DIR := $(CURDIR)/local
 GIT_HEAD_VERSION ?= $(shell git describe --tags --abbrev=7 --match "v*" 2>/dev/null)
 
 VEGITO_EXAMPLE_APPLICATION_VERSION ?= $(GIT_HEAD_VERSION)
@@ -9,10 +8,7 @@ endif
 
 VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
 
-export
-
 -include example-application.mk
--include local.mk
 -include gcloud.mk
 -include git.mk
 -include nodejs.mk
