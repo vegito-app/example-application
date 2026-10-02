@@ -110,3 +110,9 @@ application-mobile-dump: example-application-mobile-dump
 
 docker-tags-md-ci: docker-build-tags-list-ci-md
 .PHONY: docker-tags-md-ci
+
+docker-login: vegito-docker-login
+.PHONY: docker-login
+
+docker-buildx-setup: vegito-docker-buildx-setup
+.PHONY: docker-buildx-setup
