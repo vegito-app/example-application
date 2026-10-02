@@ -7,7 +7,7 @@ VEGITO_EXAMPLE_APPLICATION_VERSION := latest
 endif
 
 VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
-
+export VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REPOSITORY)/vegito-local-public
 -include example-application.mk
 -include gcloud.mk
 -include git.mk

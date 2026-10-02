@@ -7,7 +7,7 @@ variable "VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGES_BASE" {
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGE" {
-  # default = notequal("latest", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:tests-${VERSION}" : ""
+  # default = notequal("latest", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:tests-${VERSION}" : ""
   default = "${VEGITO_EXAMPLE_APPLICATION_TESTS_IMAGES_BASE}-${VERSION}"
 }
 

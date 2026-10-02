@@ -8,7 +8,7 @@ variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGES_BASE" {
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_TAG" {
-  # default = notequal("", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:mobile-${VERSION}" : ""
+  # default = notequal("", VERSION) ? "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:mobile-${VERSION}" : ""
   default = "${VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGES_BASE}-${VERSION}"
 }
 
@@ -36,22 +36,22 @@ variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE_REGISTRY_CACHE" {
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_BUILDER_IMAGE" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-flutter-${LOCAL_VERSION}"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:android-flutter-${LOCAL_VERSION}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_BUILDER_IMAGE_LATEST" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-flutter-latest"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:android-flutter-latest"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_RUNNER_IMAGE" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-appium-${LOCAL_VERSION}"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:android-appium-${LOCAL_VERSION}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_APK_RUNNER_IMAGE_LATEST" {
   description = "Android Studio image to use for mobile application builds"
-  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE}:android-appium-latest"
+  default     = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:android-appium-latest"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_RELEASE_KEYSTORE_PATH" {
