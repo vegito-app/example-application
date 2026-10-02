@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/vegito-app/example-application/compare/v1.7.2...v1.8.0) (2026-10-02)
+
+
+### Features
+
+* **makefiles:** add docker-login and docker-buildx-setup targets ([9cc0f64](https://github.com/vegito-app/example-application/commit/9cc0f64eb46f3d8589ef7895f191262c503e93ca))
+
+
+### Bug Fixes
+
+* **build:** correct image naming and set default env values ([8a19514](https://github.com/vegito-app/example-application/commit/8a195145affb6dcabfa7f5bc0e23de55d3f91844))
+* **makefiles:** adjust include directives for local.mk and docker.mk ([66e775e](https://github.com/vegito-app/example-application/commit/66e775e8451c25e51bcb54d7401e231bf5e3168d))
+* **workflows:** remove build-staging-prod job and add Docker Hub credentials ([6664c8c](https://github.com/vegito-app/example-application/commit/6664c8ce408f89adbad361bcae23bdbefe735643))
+
 ### [1.7.2](https://github.com/vegito-app/example-application/compare/v1.7.1...v1.7.2) (2026-04-07)
 
 
