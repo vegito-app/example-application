@@ -7,7 +7,7 @@ VEGITO_EXAMPLE_APPLICATION_VERSION := latest
 endif
 
 VERSION ?= $(VEGITO_EXAMPLE_APPLICATION_VERSION)
-export VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REPOSITORY)/vegito-local-public
+
 -include example-application.mk
 -include gcloud.mk
 -include git.mk
@@ -108,7 +108,7 @@ application-mobile-dump: example-application-mobile-dump
 	@echo "✅ Dumped mobile application successfully."
 .PHONY: application-mobile-dum
 
-docker-tags-md-ci: docker-build-tags-list-ci-md
+docker-tags-md-ci: vegito-docker-build-tags-list-ci-md
 .PHONY: docker-tags-md-ci
 
 docker-login: vegito-docker-login
