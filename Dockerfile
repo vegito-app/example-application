@@ -2,8 +2,7 @@ FROM builder
 
 USER root
 
-ARG non_root_user=dev
-
+ARG non_root_user=vegito
 ARG uid=1000
 ARG gid=1000
 
@@ -19,10 +18,14 @@ RUN usermod -l ${non_root_user} ${USER} \
 USER ${non_root_user}
 ENV USER=${non_root_user}
 
-WORKDIR /home/debian/example-application
+ARG builder_home=/home/debian
+ENV HOME=${builder_home}
 
-ENV GOMODCACHE=/home/${non_root_user}/go/pkg/mod
-ENV GOCACHE=/home/${non_root_user}/.cache/go-build
+RUN mkdir -p ${HOME}/src ${HOME}/src/local
+WORKDIR ${HOME}/src
+
+ENV GOMODCACHE=${HOME}/go/pkg/mod
+ENV GOCACHE=${HOME}/.cache/go-build
 ENV GOFLAGS="-mod=readonly -trimpath"
 
 COPY backend/go.mod backend/go.sum ./backend/
@@ -30,21 +33,11 @@ COPY backend/go.mod backend/go.sum ./backend/
 RUN go work init \
     ./backend 
 
-USER root
-RUN  --mount=type=cache,id=vegito-go-mod,target=/home/${non_root_user}/go/pkg/mod,sharing=locked,uid=${uid},gid=${gid} \
-    --mount=type=cache,id=vegito-go-build,target=/home/${non_root_user}/.cache/go-build,sharing=locked,uid=${uid},gid=${gid} \
-    chown -R ${non_root_user}:${non_root_user} \
-    /home/${non_root_user}/go/pkg/mod \
-    /home/${non_root_user}/.cache/go-build \
-    && mkdir -p /home/${non_root_user}/go/pkg/mod \
-    && chown -R ${non_root_user}:${non_root_user} \
-    /home/${non_root_user}/go/pkg/mod \
-    /home/${non_root_user}/.cache/go-build
+ARG TARGETPLATFORM
+ARG debian_version=bookworm
 
-USER ${non_root_user}
-
-RUN  --mount=type=cache,id=vegito-go-mod,target=/home/${non_root_user}/go/pkg/mod,sharing=locked,uid=${uid},gid=${gid} \
-    --mount=type=cache,id=vegito-go-build,target=/home/${non_root_user}/.cache/go-build,sharing=locked,uid=${uid},gid=${gid} \
+RUN --mount=type=cache,id=vegito-example-application-${debian_version}-${TARGETPLATFORM}-go-pkg,target=${builder_home}/go/pkg,sharing=locked,uid=${uid},gid=${gid} \
+    --mount=type=cache,id=vegito-example-application-${debian_version}-${TARGETPLATFORM}-go-build,target=${builder_home}/.cache/go-build,sharing=locked,uid=${uid},gid=${gid} \
     go work sync && \
     go mod download all && \
     go build -buildmode=archive \

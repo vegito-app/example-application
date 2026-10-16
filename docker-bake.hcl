@@ -75,6 +75,13 @@ group "vegito-example-application-applications-ci" {
   ]
 }
 
+group "vegito-example-application-release" {
+  targets = [
+    "vegito-example-application-services",
+    "vegito-example-application-applications"
+  ]
+}
+
 group "vegito-example-application-release-ci" {
   targets = [
     "vegito-example-application-services-ci",
@@ -130,24 +137,28 @@ variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATES
   default     = "type=local,src=${EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_LATEST}"
 }
 
+variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT" {
+  default = "docker-image://${VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME}:trixie-debian-project-golang-latest"
+}
+
 variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT_CI" {
-  default = "docker-image://${LOCAL_BUILDER_IMAGE_VERSION}"
+  default = VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT
 }
 
 target "vegito-example-application-builder" {
   contexts = {
-    builder = "docker-image://${LOCAL_BUILDER_IMAGE_VERSION}"
+    builder = VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT
   }
   context    = VEGITO_EXAMPLE_APPLICATION_DIR
   dockerfile = "Dockerfile"
   tags = [
     EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
-    notequal("", VERSION) ? EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION : "",
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION,
   ]
   cache-from = [
     USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE}" : "",
     EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATEST,
-    "type=inline,ref=${EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST}",
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
   ]
   cache-to = concat(
     ENABLE_LOCAL_CACHE ? [
@@ -163,7 +174,7 @@ group "vegito-example-application-builder-ci" {
   ]
 }
 
-target "vegito-example-x-version-ci" {
+target "vegito-example-application-builder-version-ci" {
   dockerfile = "Dockerfile"
   context    = VEGITO_EXAMPLE_APPLICATION_DIR
   contexts = {
@@ -178,7 +189,7 @@ target "vegito-example-x-version-ci" {
     ] : [],
     [
       EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_VERSION,
-      "type=inline,ref=${EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST}",
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
     ]
   )
   cache-to = concat(
@@ -206,7 +217,7 @@ target "vegito-example-application-builder-latest-ci" {
       EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATEST
     ] : [],
     [
-      "type=inline,ref=${EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST}",
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
     ]
   )
   cache-to = concat(
