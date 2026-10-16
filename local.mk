@@ -1,5 +1,4 @@
-# Version of the vegito-app/local development environment images to use:
-LOCAL_VERSION ?= v1.24.0
+
 # ------------------------------------------
 # Subtree ./local
 # ___________________________________________
@@ -21,6 +20,10 @@ git-subtree-local-push:
 	@echo "Local subtree pushed successfully."
 .PHONY: git-subtree-local-push
 # ------------------------------------------
+# Version of the vegito-app/local development environment images to use:
+LOCAL_VERSION ?= v1.25.0
+
+LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME):robotframework-$(LOCAL_VERSION)
 
 LOCAL_DIR ?= $(CURDIR)/local
 
