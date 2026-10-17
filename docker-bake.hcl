@@ -2,6 +2,7 @@ variable "VERSION" {
   description = "current git tag or commit version"
   default     = "local"
 }
+
 variable "LOCAL_VERSION" {
   description = "version of vegito-app/local repository"
 }
@@ -97,10 +98,6 @@ variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION" {
   default = "${EXAMPLE_APPLICATION_IMAGES_BASE}:builder-${VERSION}"
 }
 
-variable "EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT" {
-  default = "docker-image://${LOCAL_BUILDER_IMAGE_VERSION}"
-}
-
 variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST" {
   default = "${EXAMPLE_APPLICATION_IMAGES_BASE}:builder-latest"
 }
@@ -138,7 +135,7 @@ variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATES
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT" {
-  default = "docker-image://${VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME}:trixie-debian-project-golang-latest"
+  default = "docker-image://${VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME}:trixie-debian-project-golang-docker-${VEGITO_DOCKER_PUBLIC_IMAGES_VERSION}"
 }
 
 variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT_CI" {
