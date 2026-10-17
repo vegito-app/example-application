@@ -6,7 +6,7 @@ on:
       project:
         required: true
         type: string
-        
+
       project_docker_repository:
         required: false
         type: string
@@ -75,7 +75,7 @@ env:
 
 jobs:
   version-changelog:
-    uses: vegito-app/local/.github/workflows/version-changelog.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/version-changelog.yml@v1.26.0
     secrets: inherit
 
   version-metadata:
@@ -84,7 +84,7 @@ jobs:
       matrix:
         # environment: [dev, staging, prod]
         environment: ${{ inputs.environment }}
-    uses: vegito-app/local/.github/workflows/version-metadata.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/version-metadata.yml@v1.26.0
 
     with:
       environment: ${{ matrix.environment }}
@@ -98,7 +98,7 @@ jobs:
   build:
     name: Build Images
     needs: version-changelog
-    uses: vegito-app/local/.github/workflows/build-images.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/build-images.yml@v1.26.0
 
     with:
       version: ${{ needs.version-changelog.outputs.version }}
@@ -108,16 +108,16 @@ jobs:
       android_release_keystore_path: ${{ inputs.android_release_keystore_path }}
       use_registry_cache: ${{ inputs.use_registry_cache }}
 
-    secrets: 
+    secrets:
       GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
       GOOGLE_CLOUD_PROJECT_NUMBER: ${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}
       GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL: ${{ vars.WORKLOAD_IDENTITY_POOL_ID }}@${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}.iam.gserviceaccount.com
       GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER: projects/${{ secrets.GOOGLE_CLOUD_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ vars.WORKLOAD_IDENTITY_POOL_ID }}/providers/${{ vars.WORKLOAD_IDENTITY_PROVIDER_ID }}
-      
+
   tests:
     name: Run Functional Tests
     needs: [build, version-changelog]
-    uses: vegito-app/local/.github/workflows/functional-tests.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/functional-tests.yml@v1.26.0
 
     with:
       version: ${{ needs.version-changelog.outputs.version }}
@@ -136,7 +136,7 @@ jobs:
     strategy:
       matrix:
         image: ${{ fromJson(inputs.images_to_scan) }}
-    uses: vegito-app/local/.github/workflows/trivy-scan-image-ref.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/trivy-scan-image-ref.yml@v1.26.0
 
     with:
       environment: ${{ inputs.environment }}
@@ -155,7 +155,7 @@ jobs:
   release:
     name: Create Consolidated Release Notes
     needs: [tests, trivy, version-changelog]
-    uses: vegito-app/local/.github/workflows/application-release-metadata.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/application-release-metadata.yml@v1.26.0
 
     with:
       environment: ${{ inputs.environment }}
@@ -169,7 +169,7 @@ jobs:
   finalize:
     name: Finalize Release
     needs: [release, version-changelog]
-    uses: vegito-app/local/.github/workflows/version-finalize.yml@v1.24.0
+    uses: vegito-app/local/.github/workflows/version-finalize.yml@v1.26.0
 
     with:
       environment: ${{ inputs.environment }}
