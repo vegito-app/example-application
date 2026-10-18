@@ -18,7 +18,7 @@ jobs:
       images_to_scan: '["backend"]'
       project: example-application
       docker_registry_mode: dockerhub
-      project_docker_repository: vegito-local-public
+      project_docker_repository: example-application
       android_release_keystore_path: mobile/android/release-key.keystore
       use_registry_cache: ${{ vars.USE_REGISTRY_CACHE == 'true' }}
       env_bucket_map: |
