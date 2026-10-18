@@ -290,7 +290,6 @@ EOF
 dockerComposeGpuOverride=${WORKING_DIR:-${PWD}}/.docker-compose-gpu-override.yml
 [ -f $dockerComposeGpuOverride ] || cat <<'EOF' > $dockerComposeGpuOverride
 services:
-services:
   android-studio:
     environment:
       VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE: wayland
