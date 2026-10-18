@@ -143,14 +143,11 @@ jobs:
   tests:
     name: Run Functional Tests
     needs: [build, version-changelog]
-    strategy:
-      matrix:
-        environment: ${{ inputs.environment }}
     uses: vegito-app/local/.github/workflows/functional-tests.yml@v1.26.0
 
     with:
       version: ${{ needs.version-changelog.outputs.version }}
-      environment: ${{ matrix.environment }}
+      environment: ${{ inputs.environment }}
       functional-tests-output-dir: ${{ inputs.functional_tests_dir }}
       env_bucket_map: ${{ inputs.env_bucket_map }}
       release_bucket_prefix: ${{ inputs.release_bucket_prefix }}
