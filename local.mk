@@ -21,7 +21,7 @@ git-subtree-local-push:
 .PHONY: git-subtree-local-push
 # ------------------------------------------
 # Version of the vegito-app/local development environment images to use:
-export LOCAL_VERSION ?= v1.26.0
+export LOCAL_VERSION ?= v1.27.0
 
 LOCAL_TRIVY_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME):trivy-$(LOCAL_VERSION)
 LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME):robotframework-$(LOCAL_VERSION)
