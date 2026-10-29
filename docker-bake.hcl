@@ -2,6 +2,11 @@ variable "LOCAL_DIR" {
   default = "."
 }
 
+variable "VERSION" {
+  description = "current git tag or commit version"
+  default     = "local"
+}
+
 variable "USE_REGISTRY_CACHE" {
   default = false
   type    = bool
@@ -16,28 +21,28 @@ variable "LOCAL_DOCKER_BUILDX_LOCAL_CACHE_DIR" {
   default = "${LOCAL_DIR}/.containers/buildx-cache"
 }
 
-variable "VEGITO_LOCAL_CACHE_REPOSITORY" {
-  default = "vegito-local-repository-cache"
+variable "LOCAL_DOCKER_PUBLIC_REGISTRY" {
+  default = "registry-public.vegito.app"
 }
 
-variable "VEGITO_LOCAL_CACHE_IMAGES_BASE" {
-  default = "${VEGITO_LOCAL_CACHE_REPOSITORY}/vegito-local"
+variable "LOCAL_DOCKER_PUBLIC_REPOSITORY" {
+  default = "${LOCAL_DOCKER_PUBLIC_REGISTRY}/vegito-app"
 }
 
-variable "VEGITO_DOCKER_PRIVATE_REPOSITORY" {
-  default = "vegito-docker-repository-private"
+variable "LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME" {
+  default = "${LOCAL_DOCKER_PUBLIC_REPOSITORY}/vegito-local"
 }
 
-variable "VEGITO_DOCKER_PUBLIC_REPOSITORY" {
-  default = "vegito-docker-repository-public"
+variable "LOCAL_DOCKER_CACHE_REGISTRY" {
+  default = "registry-cache.vegito.app"
 }
 
-variable "VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME" {
-  default = "${VEGITO_DOCKER_PUBLIC_REPOSITORY}/vegito-local"
+variable "LOCAL_DOCKER_CACHE_REPOSITORY" {
+  default = "${LOCAL_DOCKER_CACHE_REGISTRY}/vegito-app"
 }
 
-variable "VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME" {
-  default = "${VEGITO_DOCKER_PUBLIC_REPOSITORY}/vegito-public"
+variable "LOCAL_DOCKER_CACHE_IMAGES_BASE_NAME" {
+  default = "${LOCAL_DOCKER_CACHE_REPOSITORY}/vegito-local"
 }
 
 variable "DEBIAN_VERSION_CODENAME" {
@@ -46,7 +51,31 @@ variable "DEBIAN_VERSION_CODENAME" {
 
 variable "VEGITO_DOCKER_PUBLIC_IMAGES_VERSION" {
   description = "git@github.com:vegito-app/docker repository based images default version"
-  default     = "v0.0.3"
+  default     = "latest"
+}
+
+variable "VEGITO_DOCKER_PRIVATE_REGISTRY" {
+  default = "registry-private.vegito.app"
+}
+
+variable "VEGITO_DOCKER_PRIVATE_REPOSITORY" {
+  default = "${VEGITO_DOCKER_PRIVATE_REGISTRY}/vegito-app"
+}
+
+variable "VEGITO_DOCKER_HUB_IMAGES_BASE_NAME" {
+  default = "${VEGITO_DOCKER_PRIVATE_REPOSITORY}/dockerhub"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_REGISTRY" {
+  default = "registry-public.vegito.app"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_REPOSITORY" {
+  default = "${VEGITO_DOCKER_PUBLIC_REGISTRY}/vegito-app"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME" {
+  default = "${VEGITO_DOCKER_PUBLIC_REPOSITORY}/vegito-docker"
 }
 
 variable "VEGITO_DOCKER_DEBIAN_CONTEXT" {
@@ -62,7 +91,7 @@ variable "VEGITO_DOCKER_DEBIAN_PROJECT_GOLANG_CONTEXT" {
 }
 
 variable "VEGITO_DOCKER_ALPINE_RUST_CONTEXT" {
-  default = "docker-image://${VEGITO_DOCKER_PUBLIC_REPOSITORY}/rust-alpine:${VEGITO_DOCKER_PUBLIC_IMAGES_VERSION}"
+  default = "docker-image://${VEGITO_DOCKER_HUB_IMAGES_BASE_NAME}/rust-alpine:${VEGITO_DOCKER_PUBLIC_IMAGES_VERSION}"
 }
 
 variable "VEGITO_DOCKER_DEBIAN_FLUTTER_DESKTOP_X_CONTEXT" {
@@ -90,10 +119,12 @@ variable "platforms" {
 
 group "local-dev" {
   targets = [
+    "local-project-builder-latest",
     "local-android",
     "local-clarinet-devnet",
     "local-firebase-emulators",
     "local-github-actions-runner",
+    "local-robotframework",
     "local-vault-dev",
     "local-trivy",
   ]
@@ -101,10 +132,12 @@ group "local-dev" {
 
 group "local-dev-ci" {
   targets = [
+    "local-project-builder-latest-ci",
     "local-android-ci",
     "local-clarinet-devnet-ci",
     "local-firebase-emulators-ci",
     "local-github-actions-runner-ci",
+    "local-robotframework-ci",
     "local-vault-dev-ci",
     "local-trivy-ci",
   ]
@@ -122,6 +155,7 @@ group "default" {
 group "release" {
   targets = [
     "local-dev",
+    "vegito-example-application"
   ]
 }
 
@@ -132,12 +166,16 @@ group "release-ci" {
   ]
 }
 
+variable "LOCAL_BUILDER_IMAGES_BASE_NAME" {
+  default = "${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:builder"
+}
+
 variable "LOCAL_BUILDER_IMAGE_VERSION" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:builder-${VERSION}"
+  default = "${LOCAL_BUILDER_IMAGES_BASE_NAME}-${VERSION}"
 }
 
 variable "LOCAL_BUILDER_IMAGE_LATEST" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}:builder-latest"
+  default = "${LOCAL_BUILDER_IMAGES_BASE_NAME}-latest"
 }
 
 variable "LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE" {
@@ -153,11 +191,7 @@ variable "LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_LATEST" {
 }
 
 variable "LOCAL_BUILDER_IMAGE_REGISTRY_CACHE" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}/cache/builder"
-}
-
-variable "LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI" {
-  default = "${VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME}/cache/builder/ci"
+  default = "${LOCAL_DOCKER_CACHE_IMAGES_BASE_NAME}/builder"
 }
 
 variable "LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE" {
@@ -206,7 +240,7 @@ target "local-project-builder" {
   ]
   cache-from = concat(
     USE_REGISTRY_CACHE ? [
-      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI}"
+      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE}"
     ] : [],
     ENABLE_LOCAL_CACHE ? [
       LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_READ_LATEST
@@ -217,7 +251,7 @@ target "local-project-builder" {
   )
   cache-to = concat(
     USE_REGISTRY_CACHE ? [
-      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI},mode=max"
+      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE},mode=max"
     ] : [],
     ENABLE_LOCAL_CACHE ? [
       LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_LATEST
@@ -239,7 +273,7 @@ target "local-project-builder-version-ci" {
   ]
   cache-from = concat(
     USE_REGISTRY_CACHE ? [
-      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI}"
+      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE}"
     ] : [],
     ENABLE_LOCAL_CACHE ? [
       LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_READ_VERSION
@@ -259,11 +293,11 @@ target "local-project-builder-version-ci" {
 target "local-project-builder-latest-ci" {
   inherits = ["local-project-builder-base"]
   tags = [
-    VEGITO_LOCAL_PUBLIC_IMAGES_BASE_NAME
+    LOCAL_BUILDER_IMAGE_LATEST
   ]
   cache-from = concat(
     USE_REGISTRY_CACHE ? [
-      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI}"
+      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE}"
     ] : [],
     ENABLE_LOCAL_CACHE ? [
       LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_READ_LATEST
@@ -274,7 +308,7 @@ target "local-project-builder-latest-ci" {
   )
   cache-to = concat(
     USE_REGISTRY_CACHE ? [
-      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE_CI},mode=max"
+      "type=registry,ref=${LOCAL_BUILDER_IMAGE_REGISTRY_CACHE},mode=max"
     ] : [],
     ENABLE_LOCAL_CACHE ? [
       LOCAL_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_LATEST
