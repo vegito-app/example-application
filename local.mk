@@ -23,7 +23,7 @@ git-subtree-local-push:
 # Version of the vegito-app/local development environment images to use:
 export LOCAL_VERSION ?= v1.27.0
 
-LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):trixie-debian-robotframework-$(LOCAL_VERSION)
+LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):robotframework-$(LOCAL_VERSION)
 
 LOCAL_DIR ?= $(CURDIR)/local
 
