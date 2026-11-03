@@ -19,6 +19,7 @@ jobs:
       project: example-application
       docker_registry_mode: dockerhub
       project_docker_repository: example-application
+      docker_public_repository: ${{ vars.VEGITO_DOCKER_PUBLIC_REPOSITORY }}
       android_release_keystore_path: mobile/android/release-key.keystore
       use_registry_cache: ${{ vars.USE_REGISTRY_CACHE == 'true' }}
       env_bucket_map: |
