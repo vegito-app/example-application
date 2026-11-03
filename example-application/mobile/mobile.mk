@@ -236,6 +236,6 @@ example-application-mobile-dump:
 
 example-application-mobile-extract-android-artifacts:
 	@echo "Extracting Android release artifacts from mobile application image..."
-	echo LOCAL_ANDROID_MOBILE_IMAGE=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE) \
+	@LOCAL_ANDROID_MOBILE_IMAGE=$(VEGITO_EXAMPLE_APPLICATION_MOBILE_IMAGE) \
 	  $(MAKE) local-android-mobile-image-tag-release-extract
 .PHONY: example-application-mobile-extract-android-artifacts

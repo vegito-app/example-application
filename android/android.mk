@@ -192,7 +192,7 @@ LOCAL_ANDROID_MOBILE_IMAGE_AAB_RELEASE_EXTRACT_PATH ?= ${LOCAL_ANDROID_MOBILE_DI
 
 local-android-mobile-image-tag-aab-extract:
 	@echo "Creating temp container from image $(LOCAL_ANDROID_MOBILE_IMAGE)"
-	echo container_id=$$(docker create $(LOCAL_ANDROID_MOBILE_IMAGE)) && \
+	@container_id=$$(docker create $(LOCAL_ANDROID_MOBILE_IMAGE)) && \
 	  echo "Copying AAB from container $$container_id..." && \
 	  docker cp $$container_id:/build/output/app-release-$(VERSION).aab $(LOCAL_ANDROID_MOBILE_IMAGE_AAB_RELEASE_EXTRACT_PATH) && \
 	  docker rm $$container_id > /dev/null && \
