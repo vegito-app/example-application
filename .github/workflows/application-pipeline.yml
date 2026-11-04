@@ -175,7 +175,6 @@ jobs:
       docker_registry_mode: ${{ inputs.docker_registry_mode }}
       # docker_registry_mode: ${{ inputs.project_docker_repository }}/${{ inputs.project }}:${{ matrix.image }}-${{ needs.version-changelog.outputs.version }}
       project: ${{ inputs.project }}
-      project_docker_repository: ${{ inputs.project_docker_repository }}
       image_name: ${{ matrix.image }}-${{ needs.version-changelog.outputs.version }}
       severity: CRITICAL,HIGH
       exit-code: "1"
