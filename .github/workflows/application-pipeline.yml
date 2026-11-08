@@ -113,12 +113,12 @@ env:
 
 jobs:
   version-changelog:
-    uses: vegito-app/local/.github/workflows/version-changelog.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/version-changelog.yml@v1.29.0
     secrets: inherit
 
   version-metadata:
     needs: version-changelog
-    uses: vegito-app/local/.github/workflows/version-metadata.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/version-metadata.yml@v1.29.0
 
     with:
       environment: ${{ inputs.environment }}
@@ -132,7 +132,7 @@ jobs:
   build:
     name: Build Images
     needs: version-changelog
-    uses: vegito-app/local/.github/workflows/build-images.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/build-images.yml@v1.29.0
     
     with:
       version: ${{ needs.version-changelog.outputs.version }}
@@ -150,7 +150,7 @@ jobs:
       - build
       - version-changelog
     name: Upload Android artifacts
-    uses: vegito-app/local/.github/workflows/upload-android-artifacts.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/upload-android-artifacts.yml@v1.29.0
     strategy:
       matrix:
         environment: [dev]
@@ -162,7 +162,7 @@ jobs:
   tests:
     name: Run Functional Tests
     needs: [build, version-changelog]
-    uses: vegito-app/local/.github/workflows/functional-tests.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/functional-tests.yml@v1.29.0
 
     with:
       version: ${{ needs.version-changelog.outputs.version }}
@@ -181,11 +181,10 @@ jobs:
     strategy:
       matrix:
         image: ${{ fromJson(inputs.images_to_scan) }}
-    uses: vegito-app/local/.github/workflows/trivy-scan-image-ref.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/trivy-scan-image-ref.yml@v1.29.0
 
     with:
       environment: ${{ inputs.environment }}
-      docker_registry_mode: ${{ inputs.docker_registry_mode }}
       project: ${{ inputs.project }}
       image_name: ${{ matrix.image }}-${{ needs.version-changelog.outputs.version }}
       severity: CRITICAL,HIGH
@@ -199,7 +198,7 @@ jobs:
   release:
     name: Create Consolidated Release Notes
     needs: [tests, trivy, version-changelog]
-    uses: vegito-app/local/.github/workflows/application-release-metadata.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/application-release-metadata.yml@v1.29.0
 
     with:
       environment: ${{ inputs.environment }}
@@ -213,7 +212,7 @@ jobs:
   finalize:
     name: Finalize Release
     needs: [release, version-changelog]
-    uses: vegito-app/local/.github/workflows/version-finalize.yml@v1.28.1
+    uses: vegito-app/local/.github/workflows/version-finalize.yml@v1.29.0
 
     with:
       environment: ${{ inputs.environment }}
