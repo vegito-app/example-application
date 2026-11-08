@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://github.com/vegito-app/example-application/compare/v1.9.2...v1.10.0) (2026-11-08)
+
+
+### Features
+
+* **pipeline:** mettre à jour les versions des workflows et ajouter le job d'upload des artefacts Android ([0412146](https://github.com/vegito-app/example-application/commit/0412146804b662736f52c1014408d5fab6d13c14))
+* **pipeline:** mettre à jour les workflows vers la version 1.29.0 ([ee2fe6b](https://github.com/vegito-app/example-application/commit/ee2fe6b8752420f2ce15e202dca7cb2d234a2368))
+
+
+### Bug Fixes
+
+* **Makefile:** corriger une faute de frappe dans la déclaration de la cible .PHONY pour application-mobile-dump ([82ee41a](https://github.com/vegito-app/example-application/commit/82ee41ae5e3a7a4ef8eec0d7add8abab559cd5f6))
+
 ### [1.9.2](https://github.com/vegito-app/example-application/compare/v1.9.1...v1.9.2) (2026-11-05)
 
 
