@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.3](https://github.com/vegito-app/example-application/compare/v1.10.2...v1.10.3) (2026-11-13)
+
+
+### Bug Fixes
+
+* réorganiser les paramètres d'entrée pour les workflows de version et de construction ([4f19db2](https://github.com/vegito-app/example-application/commit/4f19db2b51804f05d6095578c9e85e242d728e1b))
+
 ### [1.10.2](https://github.com/vegito-app/example-application/compare/v1.10.1...v1.10.2) (2026-11-13)
 
 ### [1.10.1](https://github.com/vegito-app/example-application/compare/v1.10.0...v1.10.1) (2026-11-11)
