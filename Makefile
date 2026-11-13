@@ -118,7 +118,8 @@ application-mobile-dump: example-application-mobile-dump
 docker-tags-md-ci: 
 	@echo "Generating Docker tags markdown for CI..."	
 	@$(MAKE) VEGITO_DOCKER_BUILDX_BUILD_GROUPS=vegito-example-application \
-	   vegito-docker-build-tags-list-ci-md
+	   vegito-docker-build-tags-list-ci-md 2>/dev/null \
+	| grep -v 'make\[1\]'
 .PHONY: docker-tags-md-ci
 
 docker-login: vegito-docker-login
