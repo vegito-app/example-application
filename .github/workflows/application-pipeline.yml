@@ -142,7 +142,6 @@ jobs:
       android_release_keystore_path: ${{ inputs.android_release_keystore_path }}
       use_registry_cache: ${{ inputs.use_registry_cache }}
       docker_registry_mode: ${{ inputs.docker_registry_mode }}
-      docker_public_repository: ${{ inputs.docker_public_repository }}
     secrets: inherit
       
   upload-android-artifacts:
