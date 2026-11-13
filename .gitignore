@@ -29,3 +29,5 @@ firebase-emulators/firebase.json
 *.aab
 *.Apk
 *.android-release-key.*
+*.apk
+*.keystore.sha1
