@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.1](https://github.com/vegito-app/example-application/compare/v1.11.0...v1.11.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* ajuster le filtrage des messages d'erreur dans la génération des balises Docker markdown pour CI ([3d5cc12](https://github.com/vegito-app/example-application/commit/3d5cc124d92db73a267dcc98824b2d45a8c4d11b))
+* corriger l'espacement dans le filtre grep pour la génération de la liste des tags Docker ([1b0ccef](https://github.com/vegito-app/example-application/commit/1b0ccefe011d3aa7c412de90f4eba7fac7cf7eb2))
+* renommer les variables d'image mobile pour inclure la version ([83dd317](https://github.com/vegito-app/example-application/commit/83dd31788e47ddd6419b5cd7ec04f031fe7771e4))
+
 ## [1.11.0](https://github.com/vegito-app/example-application/compare/v1.10.3...v1.11.0) (2026-11-13)
 
 
