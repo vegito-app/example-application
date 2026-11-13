@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/vegito-app/example-application/compare/v1.10.3...v1.11.0) (2026-11-13)
+
+
+### Features
+
+* ajouter une cible pour générer des balises Docker markdown pour CI ([0484a91](https://github.com/vegito-app/example-application/commit/0484a91838ba5f4ae44b1cb66d888da0af034fc5))
+
 ### [1.10.3](https://github.com/vegito-app/example-application/compare/v1.10.2...v1.10.3) (2026-11-13)
 
 
