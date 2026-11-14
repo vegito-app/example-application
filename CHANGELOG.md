@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.12.2](https://github.com/vegito-app/example-application/compare/v1.12.1...v1.12.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* ajouter une condition pour l'upload des artefacts Android ([625125d](https://github.com/vegito-app/example-application/commit/625125d1668cae5282159042e644281e9f55c999))
+
 ### [1.12.1](https://github.com/vegito-app/example-application/compare/v1.12.0...v1.12.1) (2026-11-14)
 
 
