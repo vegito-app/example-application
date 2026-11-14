@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.2](https://github.com/vegito-app/example-application/compare/v1.11.1...v1.11.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* mettre à jour les versions des workflows et des images Docker à v1.29.5 ([6f240bf](https://github.com/vegito-app/example-application/commit/6f240bf67d255e222c4969940c2ce1a35026aff8))
+
 ### [1.11.1](https://github.com/vegito-app/example-application/compare/v1.11.0...v1.11.1) (2026-11-13)
 
 
