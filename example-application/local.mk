@@ -1,0 +1,82 @@
+
+# ------------------------------------------
+# Subtree ./local
+# ___________________________________________
+#
+# This section manages the local subtree, which contains local development tools and configurations.
+# It allows for pulling and pushing changes to a separate local repository.
+#------------------------------------------
+git-subtree-local-pull:
+	@echo "⬇︎ Pulling the local subtree..."
+	@git subtree pull --prefix local \
+	  git@github.com:vegito-app/local.git main --squash
+	@echo "Local subtree pulled successfully."
+.PHONY: git-subtree-local-pull
+
+git-subtree-local-push:
+	@echo "⬆︎ Pushing changes from the local subtree..."
+	@git subtree push --prefix local \
+	  git@github.com:vegito-app/local.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
+	@echo "Local subtree pushed successfully."
+.PHONY: git-subtree-local-push
+# ------------------------------------------
+# Version of the vegito-app/local development environment images to use:
+export LOCAL_VERSION ?= v1.29.5
+
+LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):robotframework-$(LOCAL_VERSION)
+LOCAL_TRIVY_IMAGE_VERSION          ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):trivy-$(LOCAL_VERSION)
+
+LOCAL_DIR ?= $(CURDIR)/local
+
+LOCAL_GO_MODULES ?= \
+	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR) \
+	proxy \
+	$(VEGITO_EXAMPLE_APPLICATION_BACKEND_DIR)
+
+LOCAL_GO_MODULES = \
+
+LOCAL_ROBOTFRAMEWORK_TESTS_DIR ?= $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
+
+export VEGITO_DOCKER_PUBLIC_IMAGES_VERSION ?= v0.0.16
+export LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REPOSITORY)/vegito-local
+
+export LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REGISTRY)/vegito-local
+export LOCAL_BUILDER_IMAGE_VERSION ?= $(VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME):trixie-debian-project-golang-docker-$(VEGITO_DOCKER_PUBLIC_IMAGES_VERSION)
+
+LOCAL_DOCKER_BUILDX_BAKE ?= docker buildx bake \
+	--allow=fs.read=.. \
+	-f $(LOCAL_DIR)/docker-bake.hcl \
+	-f $(LOCAL_DIR)/robotframework/docker-bake.hcl \
+	$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_DIR)/%/docker-bake.hcl) \
+	-f $(LOCAL_ANDROID_DIR)/docker-bake.hcl \
+	$(LOCAL_ANDROID_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_ANDROID_DIR)/%/docker-bake.hcl) \
+	-f $(CURDIR)/docker-bake.hcl \
+	-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/docker-bake.hcl \
+	$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
+	-f $(LOCAL_DIR)/github-actions/docker-bake.hcl
+
+export LOCAL_DOCKER_COMPOSE ?= docker compose \
+    -f $(CURDIR)/docker-compose.yml \
+    -f $(LOCAL_DIR)/docker-compose.yml \
+    -f $(LOCAL_DIR)/trivy/docker-compose.yml \
+    -f $(CURDIR)/.docker-compose-services-override.yml \
+    -f $(CURDIR)/.docker-compose-networks-override.yml \
+    -f $(CURDIR)/.docker-compose-gpu-override.yml
+
+LOCAL_ANDROID_DOCKER_COMPOSE_SERVICES = \
+  studio
+
+LOCAL_DOCKER_COMPOSE_SERVICES ?= \
+  firebase-emulators \
+  robotframework \
+#   vault-dev \
+#   trivy
+#   clarinet-devnet \
+
+-include $(LOCAL_DIR)/local.mk
+-include $(LOCAL_DIR)/android.mk
+-include $(LOCAL_DIR)/docker.mk
+
+VEGITO_GCLOUD_DIR ?= $(LOCAL_DIR)/gcloud
+-include $(VEGITO_GCLOUD_DIR)/gcloud.mk
+# ----------------------------------------------------------

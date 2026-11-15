@@ -1,95 +1,226 @@
-![Release Version](https://img.shields.io/github/v/release/vegito-app/example-application?sort=semver)
-![CI](https://github.com/vegito-app/example-application/actions/workflows/application-main-release.yml/badge.svg?branch=main)
+![Release Version](https://img.shields.io/github/v/release/vegito-app/local?sort=semver)
+![CI](https://github.com/vegito-app/local/actions/workflows/application-main-release.yml/badge.svg?branch=main)
 
-# Example Application
+# local
 
-🔗 **[Download from GCS release bucket of project `local` – version `v1.1.0`](https://release.vegito.app/releases?project=local&version=v1.1.0)**
+<!-- ![Logo](./assets/images/logo-1.png) -->
 
-### 📱 Download and Preview
+![image](https://github.com/user-attachments/assets/2b24c0b6-d77d-45d1-a16d-e8b2b134601b)
 
-<div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-  <div style="text-align: center;">
-    <img
-      src="https://storage.googleapis.com/vegito-app-prod-github-actions-ci-artifacts/vegito-app/example-application/v1.1.0/qr-code.png"
-      alt="QR Code"
-      width="140"
-      height="140"
-    />
-    <div>
-      ➡️
-      <a
-        href="https://storage.googleapis.com/vegito-app-prod-github-actions-ci-artifacts/vegito-app/example-application/v1.1.0/app-release.apk"
-        >Download APK</a
-      >
-    </div>
-  </div>
-  <div>
-    <img
-      src="https://storage.googleapis.com/vegito-app-prod-github-actions-ci-artifacts/vegito-app/example-application/v1.1.0/mobile/android-preview.png"
-      alt="App Screenshot"
-      style="max-height: 480px; border: 1px solid #ccc;"
-    />
-  </div>
-</div>
+**Portable DevContainer Environment for Vegito**
 
-#### example-application-backend
+This repository offers a **GPU-accelerated, containerized development environment** tailored for the Vegito project.
+It includes ready-to-use setups for Android Studio, Firebase emulators, smart contracts with Clarinet, Vault (in dev mode), and GPU tools — all optimized for use inside DevContainers (VS Code, Codespaces, etc.).
 
-The _example_application-backend_ serves an _example_application-frontend_ web react example-application.
+> 🔧 **Currently supports NVIDIA GPUs**.
+> 💡 **PRs for AMD GPU support are welcome!**
+> 🧠 Built for reproducibility, portability, and extensibility.
 
-Start _example_application-backend_:
+## Usage
 
-```
-make example-application-backend-run
-```
+Clone this repo and launch the devcontainer in VSCode.
 
-Build _example_application-backend_ image:
+## 🧪 Example Workflows
 
-```
+This project exposes a **large Makefile surface (~500 targets)** allowing:
+
+- fine-grained control (build one image)
+- grouped builds (logical subsets)
+- full DAG execution (CI-style massive builds)
+
+### Minimal local build
+
 make example-application-backend-image
-```
 
-Run _example_application-backend_ docker-compose service container from the _example_application-backend-image_.
+### Full CI DAG (heavy)
 
-```
-make example-application-backend-docker-compose-run
-```
+make images-ci
 
-Some other companion Makefile targets in familly `example-application-backend-*` are also available, see [example-application/backend/backend.mk](example-application/backend/backend.mk) for details.
+---
 
-    example-application-backend-docker-compose-logs
-    example-application-backend-docker-compose-rm
-    example-application-backend-docker-compose-run
-    example-application-backend-docker-compose-stop
-    example-application-backend-docker-compose-up
-    example-application-backend-docker-compose-rm
-    example-application-backend-image
-    example-application-backend-image-push
-    example-application-backend-image-push-ci
-    example-application-backend-install
-    example-application-backend-run
+## Subtree Integration
 
-#### example-application-frontend
+Integrate this repository into your project as a folder named `local`, `.local`, `dev`, etc.
 
-As mentionned above the _application-frontend_ web react app is served by the _application-backend_ server.
-
-Application is available at:
-
-- [http://localhost:8080](http://localhost:8080) for the standard react example-application.
-- or [http://localhost:8080/ui](http://localhost:8080/ui) for the server-side pre-rendered react example-application.
-
-Some othe companion Makefile targets in familly `example-application-frontend-*` are available, see [example-application/frontend/frontend.mk](example-application/frontend/frontend.mk) for details.
-
-#### example-application-mobile
-
-A mobile cross platform _iOS_ and _Android_ _mobile-application_ using [Flutter](https://flutter.dev) is also available.
-
-See [example-application/mobile/flutter.mk](example-application/mobile) folder for more details about the available `example-application-mobile-*` targets.
-
-As an example, get _application-mobile_ Flutter dependancies with:
+Example using git subtree:
 
 ```bash
-$ make example-application-mobile-flutter-pub-get
+git subtree add --prefix local https://github.com/vegito-app/local.git main --squash
 ```
+
+Depending on your project, `tree` should now show something like:
+
+```
+dev@94476426acc6:/workspaces/my-project$ tree -L 1 .
+.
+|-- CHANGELOG.md
+|-- Makefile
+|-- README.md
+|-- application
+|-- docs
+|-- infra
+|-- local  <----- your project now embeds a git subtree folder of this repository
+```
+
+Makefile targets are available by including `local.mk` from the top-level Makefile:
+
+```makefile
+include local/local.mk
+```
+
+---
+
+## ✨ Features
+
+```
+              ┌───────────────────┐
+              │ container root    │
+              │                   │
+              │ Xorg              │
+              │ Openbox           │
+              │ NVIDIA            │
+              └─────────┬─────────┘
+                        │ DISPLAY=:20
+────────────────────────┼────────────────────────
+                        │
+         ┌──────────────┴──────────────┐
+         │                             │
+┌────────▼────────┐         ┌──────────▼───────┐
+│ container B     │         │ container C      │
+│ Android Studio  │         │ Chrome           │
+│ xpra server     │         │ xpra server      │
+└─────────────────┘         └──────────────────┘
+```
+
+- ⚡ **GPU-accelerated Android Emulator** (e.g. Google Maps, camera, media)
+- 🧠 **AI/ML-compatible GPU runtime** (CUDA, OpenGL, Vulkan-ready)
+- 🐋 **Headless container** powered by Docker + Xorg + Xpra
+- 🎯 **OpenGL via NVIDIA GPU passthrough**
+- 🧪 **Emulator testing & CI pipeline-ready**
+- 🪄 **Devcontainers compatible** (VS Code, GitHub Codespaces)
+- 🌐 **Web-based GUI access** via Xpra HTML5
+- 🔄 **Composable Docker build system** with Makefile targets
+
+---
+
+# 💻 Dev Environment Overview
+
+Welcome to **DevLocal-Docker**, a fully portable, GPU-accelerated local development stack designed for high-performance Flutter + Android + GPU projects. This stack provides a complete development environment, including Android Studio with emulator support, GPU rendering, server-side rendering with V8Go, and full headless compatibility via Xpra + Xorg.
+
+---
+
+## 📦 Components
+
+| Layer           | Stack                                                 |
+| --------------- | ----------------------------------------------------- |
+| 🧰 Base         | Debian 12 + Docker + NVIDIA Container Toolkit         |
+| 🧠 GPU          | NVIDIA RTX / CUDA-enabled environment                 |
+| 📱 Mobile Dev   | Android SDK, Emulator, Flutter SDK                    |
+| 🧠 SSR          | V8Go + React SSR                                      |
+| 🎮 GUI Headless | Xorg + Openbox + Xpra with web VNC support            |
+| 🧪 Testing      | Automated emulator testing via `glxinfo`, `adb`, etc. |
+
+---
+
+## 🔧 Setup
+
+### 1. Build and run the container
+
+```bash
+# 1. Build and run the container
+make local-android-studio-image-pull
+make local-android-studio-container-sh
+```
+
+### 2. Inside the container, start the display
+
+```bash
+display-start-xpra.sh
+```
+
+### 3. Access the desktop via browser
+
+Open [http://localhost:5900/](http://localhost:5900/) in your web browser.
+
+---
+
+## 🖥️ GPU Acceleration (Success Example)
+
+To use GPU acceleration in Docker containers, installation steps are available here: [NVIDIA GPU Docker Setup for Debian Bookworm](docker/gpu/README.md).
+
+Verify GPU rendering from inside the container:
+
+```bash
+DISPLAY=:1 glxinfo | grep -E "renderer|OpenGL"
+```
+
+Expected output (example):
+
+```
+OpenGL vendor string: NVIDIA Corporation
+OpenGL renderer string: NVIDIA GeForce RTX 2080 Ti/PCIe/SSE2
+OpenGL core profile version string: 4.6.0 NVIDIA 535.247.01
+...
+```
+
+---
+
+## 🚀 Quick Start
+
+```bash
+make dev
+```
+
+This command starts all services defined in `docker-compose.yml`, including:
+
+- the main `dev` container (your shell and workspace)
+- the application backend
+- Firebase emulators
+- Clarinet (smart contracts)
+- Android Studio
+- Vault (dev mode)
+
+Once the `dev` container is running, you can execute all usual `make` commands **from inside the container**, or use automatic integration if you are in a **VSCode DevContainer**.
+
+> 💡 Tip: You can also launch the project via the "Open in Container" interface in VSCode, which automatically uses `make dev`.
+
+---
+
+## 🔐 GCP Authentication
+
+To interact with cloud infrastructure (Firebase, Terraform, etc.), you need to authenticate.
+
+Use:
+
+```bash
+make gcloud-auth-login-sa
+```
+
+---
+
+## 🧰 Local Services: Available Commands
+
+Each service started via `docker-compose` has **dedicated `make` commands**. From inside the `dev` container, for example:
+
+```bash
+make android-studio-container-start     # Start Android Studio
+make android-studio-container-logs      # View logs
+make android-studio-container-sh        # Shell into the container
+make android-studio-container-stop      # Stop the service
+```
+
+The same logic applies to:
+
+- Clarinet (Clarity contracts)
+- Vault (secret storage)
+- Firebase Emulators
+- The Go backend, etc.
+
+#### Next steps
+
+- Add a VPN and/or SSH container to the container set to provide an integrated entrypoint usable from the internet with minimal configuration.
+
+---
 
 # 🚀 CI/CD Structure & Application Modularity
 
@@ -101,11 +232,11 @@ The **Vegito** project is built on a coherent layered stack of technologies: Git
 
 ### 1. **GitHub CI (top level)**
 
-Each example-application repository contains an `example-application-release.yml` workflow that uses the shared template `example-application-release-template.yml`.
+Each application repository contains an `application-release.yml` workflow that uses the shared template `application-release-template.yml`.
 
 This pipeline:
 
-- builds the example-application (mobile, backend, etc.)
+- builds the application (mobile, backend, etc.)
 - produces versioned artifacts (APK, AAB, Docker images, ...)
 - uploads artifacts to a GCS bucket
 - exposes the release via: [https://releases.vegito.app](https://releases.vegito.app)
@@ -126,7 +257,7 @@ Benefits:
 
 - local validation of builds
 - command factorization for CI and developers
-- flexibility: each example-application only needs to expose the targets required by CI
+- flexibility: each application only needs to expose the targets required by CI
 
 ### 3. **Docker (build & run)**
 
@@ -150,7 +281,7 @@ With DevContainer, the local environment is **identical** to the CI runtime. It 
 
 ---
 
-## 🗂️ Adding a new example-application
+## 🗂️ Adding a new application
 
 To make a repository compatible with the generic CI pipeline:
 
@@ -165,7 +296,7 @@ To make a repository compatible with the generic CI pipeline:
 
 ```mermaid
 graph TD
-  A[Dev / CI GitHub] --> B[Workflow example-application-release.yml]
+  A[Dev / CI GitHub] --> B[Workflow application-release.yml]
   B --> C[Make commands]
   C --> D[Top-level Makefile]
   D --> E[Modules *.mk]
@@ -178,6 +309,37 @@ graph TD
   K --> L[Versioned artifacts: APK, AAB, Images...]
   L --> M[GCS bucket + releases page]
 ```
+
+---
+
+## ⚙️ Build Philosophy (Why this is "big")
+
+This repository intentionally embraces a **DAG-based build system** powered by:
+
+- `docker buildx bake`
+- modular `Makefile`
+- composable contexts
+
+### Trade-offs
+
+✔ Maximum reuse of layers  
+✔ Parallel build optimization (CI-ready)  
+✔ Multi-platform support (amd64 / arm64)
+
+✖ Can saturate disk I/O on local machines  
+✖ Requires tuning (parallelism, cache strategy)
+
+### Key idea
+
+You are not forced to use the full DAG.
+
+You can:
+
+- run individual targets
+- compose your own build groups
+- or go full CI mode
+
+Same codebase — multiple execution strategies.
 
 ---
 

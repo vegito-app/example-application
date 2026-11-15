@@ -1,0 +1,262 @@
+variable "VERSION" {
+  description = "current git tag or commit version"
+  default     = "local"
+}
+
+variable "LOCAL_VERSION" {
+  description = "version of vegito-app/local repository"
+}
+variable "VEGITO_EXAMPLE_APPLICATION_DIR" {
+  default = "."
+}
+variable "INFRA_ENV" {
+  description = "production, staging or dev"
+  default     = "dev"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_REGISTRY" {
+  default = "registry-public.vegito.app"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_REPOSITORY" {
+  default = "${VEGITO_DOCKER_PUBLIC_REGISTRY}/vegito-app"
+}
+
+variable "VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME" {
+  default = "${VEGITO_DOCKER_PUBLIC_REPOSITORY}/vegito-docker"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_DOCKER_PUBLIC_REGISTRY" {
+  default = "registry-public.vegito.app"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_DOCKER_PUBLIC_REPOSITORY" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_DOCKER_PUBLIC_REGISTRY}/vegito-app"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_PUBLIC_DOCKER_IMAGES_BASE_NAME" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_DOCKER_PUBLIC_REPOSITORY}/example-application"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_DOCKER_CACHE_REGISTRY" {
+  default = "registry-cache.vegito.app"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_DOCKER_CACHE_REPOSITORY" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_DOCKER_CACHE_REGISTRY}/vegito-app"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_CACHE_REPOSITORY" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_DOCKER_CACHE_REPOSITORY}/vegito-example"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_CACHE_IMAGES_BASE" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_CACHE_REPOSITORY}/application"
+}
+
+group "vegito-example-application" {
+  targets = [
+    "vegito-example-application-builders",
+    "vegito-example-application-services",
+    "vegito-example-application-applications",
+  ]
+}
+
+group "vegito-example-application-ci" {
+  targets = [
+    "vegito-example-application-builders-ci",
+    "vegito-example-application-services-ci",
+    "vegito-example-application-applications-ci",
+  ]
+}
+
+group "vegito-example-application-builders" {
+  targets = [
+    "vegito-example-application-builder",
+  ]
+}
+
+group "vegito-example-application-builders-ci" {
+  targets = [
+    "vegito-example-application-builder-ci",
+  ]
+}
+
+group "vegito-example-application-services" {
+  targets = [
+    "vegito-example-application-backend",
+  ]
+}
+
+group "vegito-example-application-services-ci" {
+  targets = [
+    "vegito-example-application-backend-ci",
+  ]
+}
+
+group "vegito-example-application-applications" {
+  targets = [
+    "vegito-example-application-mobile",
+    "vegito-example-application-tests",
+  ]
+}
+
+group "vegito-example-application-applications-ci" {
+  targets = [
+    "vegito-example-application-mobile-ci",
+    "vegito-example-application-tests-ci",
+  ]
+}
+
+group "vegito-example-application-release" {
+  targets = [
+    "vegito-example-application-builder",
+    "vegito-example-application-services",
+    "vegito-example-application-applications"
+  ]
+}
+
+group "vegito-example-application-release-ci" {
+  targets = [
+    "vegito-example-application-builder-ci",
+    "vegito-example-application-services-ci",
+    "vegito-example-application-applications-ci"
+  ]
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGES_BASE" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_PUBLIC_DOCKER_IMAGES_BASE_NAME}:builder"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGES_BASE}-${VERSION}"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGES_BASE}-latest"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE" {
+  default = "${VEGITO_EXAMPLE_APPLICATION_CACHE_IMAGES_BASE}/builder"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_VERSION" {
+  default = "${LOCAL_DOCKER_BUILDX_LOCAL_CACHE_DIR}/builder-version"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_LATEST" {
+  default = "${LOCAL_DOCKER_BUILDX_LOCAL_CACHE_DIR}/builder-latest"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_VERSION" {
+  description = "local write cache (version) for example-application-builder image build"
+  default     = "type=local,mode=max,dest=${EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_VERSION}"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_LATEST" {
+  description = "local write cache (latest) for example-application-builder image build"
+  default     = "type=local,mode=max,dest=${EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_LATEST}"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_VERSION" {
+  description = "local read cache (version) for example-application-builder image build (cannot be used before first write)"
+  default     = "type=local,src=${EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_VERSION}"
+}
+
+variable "EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATEST" {
+  description = "local read cache (latest) for example-application-builder image build (cannot be used before first write)"
+  default     = "type=local,src=${EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_LATEST}"
+}
+
+variable "VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT" {
+  default = "docker-image://${VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME}:trixie-debian-project-golang-docker-${VEGITO_DOCKER_PUBLIC_IMAGES_VERSION}"
+}
+
+target "vegito-example-application-builder" {
+  contexts = {
+    builder = VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT
+  }
+  context    = VEGITO_EXAMPLE_APPLICATION_DIR
+  dockerfile = "Dockerfile"
+  tags = [
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION,
+  ]
+  cache-from = [
+    USE_REGISTRY_CACHE ? "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE}" : "",
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATEST,
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
+  ]
+  cache-to = concat(
+    ENABLE_LOCAL_CACHE ? [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_LATEST
+    ] : []
+  )
+}
+
+group "vegito-example-application-builder-ci" {
+  targets = [
+    "vegito-example-application-builder-version-ci",
+    "vegito-example-application-builder-latest-ci",
+  ]
+}
+
+target "vegito-example-application-builder-version-ci" {
+  dockerfile = "Dockerfile"
+  context    = VEGITO_EXAMPLE_APPLICATION_DIR
+  contexts = {
+    builder = VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT
+  }
+  tags = [
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_VERSION,
+  ]
+  cache-from = concat(
+    USE_REGISTRY_CACHE ? [
+      "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE}"
+    ] : [],
+    [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_VERSION,
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
+    ]
+  )
+  cache-to = concat(
+    ENABLE_LOCAL_CACHE ? [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_VERSION
+    ] : []
+  )
+  platforms = platforms
+}
+
+target "vegito-example-application-builder-latest-ci" {
+  dockerfile = "Dockerfile"
+  context    = VEGITO_EXAMPLE_APPLICATION_DIR
+  contexts = {
+    builder = VEGITO_EXAMPLE_APPLICATION_BUILDER_BASE_CONTEXT
+  }
+  tags = [
+    EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST
+  ]
+  cache-from = concat(
+    USE_REGISTRY_CACHE ? [
+      "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE}"
+    ] : [],
+    ENABLE_LOCAL_CACHE ? [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_LOCAL_CACHE_READ_LATEST
+    ] : [],
+    [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_LATEST,
+    ]
+  )
+  cache-to = concat(
+    USE_REGISTRY_CACHE ? [
+      "type=registry,ref=${VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGE_REGISTRY_CACHE},mode=max"
+    ] : [],
+    ENABLE_LOCAL_CACHE ? [
+      EXAMPLE_APPLICATION_BUILDER_IMAGE_DOCKER_BUILDX_CACHE_WRITE_LATEST
+    ] : [],
+    [
+      "type=inline"
+    ]
+  )
+  platforms = platforms
+}

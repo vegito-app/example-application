@@ -7,7 +7,7 @@ set -euo pipefail
 
 trap "echo Exited with code $?." EXIT
 
-projectName=${VEGITO_PROJECT_NAME:-vegito-example-application}
+projectName=${VEGITO_PROJECT_NAME:-vegito-local}
 projectUser=${VEGITO_PROJECT_USER:-local-developer-id}
 localDockerComposeProjectName=${VEGITO_COMPOSE_PROJECT_NAME:-$projectName-$projectUser}
 
@@ -17,10 +17,23 @@ GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID:-${DEV_GOOGLE_CLOUD_PROJECT_ID
 
 currentWorkingDir=${WORKING_DIR:-${PWD}}
 
+# Autodetect KVM GID
 if [ -e /dev/kvm ]; then
   KVM_GID=$(stat -c '%g' /dev/kvm)
 else
   KVM_GID=""
+fi
+# Autodetect GPU mode
+if [ -z "${VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE:-}" ]; then
+    echo "🔍 VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE not specified, detecting GPU acceleration..."
+
+    if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+        export VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE="wayland"
+        echo "✅ NVIDIA GPU acceleration detected -> using Wayland GPU mode"
+    else
+        export VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE="swiftshader_indirect"
+        echo "ℹ️ No GPU acceleration detected -> using SwiftShader fallback"
+    fi
 fi
 
 # Ensure the current working directory exists.
@@ -38,18 +51,22 @@ localDotenvFile=${currentWorkingDir}/.env
 COMPOSE_PROJECT_NAME=${localDockerComposeProjectName}
 # Make sure to set the correct values for using your personnal credentials IAM permissions. 
 VEGITO_PROJECT_USER=${VEGITO_PROJECT_USER:-${USER:-vegito-developer-id}}
-#------------------------------------------------------- 
-# The following resources are used for the local development environment:
-# 
-LOCAL_BUILDER_IMAGE=${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:builder-${LOCAL_VERSION:-latest}
 # 
 GOOGLE_CLOUD_PROJECT_ID=${DEV_GOOGLE_CLOUD_PROJECT_ID}
+#------------------------------------------------------- 
+# The following resources are used for the local development environment:
+LOCAL_BUILDER_IMAGE=${LOCAL_BUILDER_IMAGE}
+# 
+LC_TIME=${LC_TIME:-}
+TZ=${TZ:-UTC}
+# 
 DEV_GOOGLE_IDP_OAUTH_KEY_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-key/versions/latest
 DEV_GOOGLE_IDP_OAUTH_CLIENT_ID_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/google-idp-oauth-client-id/versions/latest
 DEV_STRIPE_KEY_SECRET_SECRET_ID=projects/${DEV_GOOGLE_CLOUD_PROJECT_ID}/secrets/stripe-key/versions/latest
 # 
 KVM_GID=${KVM_GID}
-# 
+VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE=${VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE:-swiftshader_indirect}
+#
 FIREBASE_ADMINSDK_SERVICEACCOUNT_ID=projects/${GOOGLE_CLOUD_PROJECT_ID}/secrets/firebase-adminsdk-service-account-key/versions/latest
 FIREBASE_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
 # 
@@ -89,13 +106,16 @@ dockerComposeOverride=${WORKING_DIR:-${PWD}}/.docker-compose-services-override.y
 [ -f $dockerComposeOverride ] || cat <<'EOF' > $dockerComposeOverride
 services:
   dev:
-    image: ${LOCAL_BUILDER_IMAGE:-${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:builder-${VERSION:-latest}}
     command: |
       bash -c '
-        make vegito-docker-sock
-        if [ "$${MAKE_DEV_ON_START:-false}" = "true" ] ; then
-          make dev
+        if [ -f /usr/local/bin/desktop-x-start.sh ]; then
+            # echo "🖥️ X Desktop starting..."
+            /usr/local/bin/desktop-x-start.sh &
+            echo "🖥️ X Desktop started..."
+        else
+          echo "🖥️ X Desktop not started."
         fi
+        make vegito-docker-sock
         if [ "$${MAKE_TESTS_ON_START:-false}" = "true" ] ; then
           make application-mobile-wait-for-boot
           make functional-tests
@@ -103,14 +123,24 @@ services:
         sleep infinity
       '
 
+  example-application-mobile:
+    working_dir: ${PWD}/example-application/mobile
+    environment:
+      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/example-application/tests/mobile_images
+
+  example-application-tests:
+    working_dir: ${PWD}/example-application/tests
+    environment:
+      LOCAL_ROBOTFRAMEWORK_TESTS_DIR: ${PWD}/example-application/tests
+
   android-studio:
     image: ${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:android-studio-latest
     environment:
-      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/tests/mobile_images
+      LOCAL_ANDROID_EMULATOR_DATA: ${PWD}/example-application/tests/mobile_images
       LOCAL_ANDROID_STUDIO_ON_START: ${LOCAL_ANDROID_STUDIO_ON_START:-false}
       LOCAL_ANDROID_STUDIO_CONTAINER_INSTALL: ${LOCAL_ANDROID_STUDIO_CONTAINER_INSTALL:-false}
       LOCAL_ANDROID_STUDIO_CONTAINER_CACHE: ${LOCAL_ANDROID_STUDIO_CONTAINER_CACHE:-${PWD}/.containers/android-studio}
-    working_dir: ${PWD}/mobile
+    working_dir: ${PWD}/example-application/mobile
 
   clarinet-devnet:
     image: ${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:clarinet-latest
@@ -119,12 +149,12 @@ services:
       LOCAL_CLARINET_DEVNET_CONTAINER_CACHE: ${LOCAL_CLARINET_DEVNET_CONTAINER_CACHE:-${PWD}/.containers/clarinet-devnet}
 
   robotframework:
-    image: ${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:robotframework-latest
-    working_dir: ${PWD}/tests
+    working_dir: ${PWD}/example-application/tests
     environment:
-      LOCAL_ROBOTFRAMEWORK_TESTS_DIR: ${PWD}/tests
+      LOCAL_ROBOTFRAMEWORK_TESTS_DIR: ${PWD}/example-application/tests
       LOCAL_ROBOTFRAMEWORK_CONTAINER_CACHE: ${LOCAL_ROBOTFRAMEWORK_CONTAINER_CACHE:-${PWD}/.containers/robotframework}
-      LOCAL_ROBOTFRAMEWORK_CONTAINER_INSTALL: ${LOCAL_ROBOTFRAMEWORK_CONTAINER_INSTALL:-false}
+      LOCAL_ROBOTFRAMEWORK_CACHES_REFRESH: ${LOCAL_ROBOTFRAMEWORK_CACHES_REFRESH:-false}
+      VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_PACKAGE_NAME: ${VEGITO_EXAMPLE_APPLICATION_MOBILE_ANDROID_PACKAGE_NAME}
   
   firebase-emulators:
     image: ${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:firebase-emulators-latest
@@ -138,53 +168,34 @@ services:
       ./vault-init.sh
       sleep infinity
       '
+  nestor:
+    image: ${LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME}:nestor-latest
 EOF
-
-
-mobileLaunchDebug=${PWD}/tests/robot/.vscode/launch.json
-if [ ! -f $mobileLaunchDebug ] ;  then
-mkdir -p $(dirname $mobileLaunchDebug)
-cat <<'EOF' > $mobileLaunchDebug
-{
-    "workbench.colorTheme": "Red",
-    "robotcode.languageServer.mode": "stdio",
-    "robotcode.analysis.progressMode": "detailed",
-    "robotcode.workspace.excludePatterns": [
-        ".hatch/",
-        ".venv/",
-        "node_modules/",
-        ".pytest_cache/",
-        "__pycache__/",
-        ".mypy_cache/",
-        ".robotcode_cache/"
-    ],
-    "robotcode.robot.outputDir": "${workspaceFolder}/results",
-    "robotcode.analysis.diagnosticMode": "workspace",
-    "robotcode.analysis.referencesCodeLens": false,
-}
-EOF
-fi
 
 dockerNetworkName=${VEGITO_LOCAL_DOCKER_NETWORK_NAME:-dev}
 dockerComposeNetworksOverride=${WORKING_DIR:-${PWD}}/.docker-compose-networks-override.yml
 [ -f $dockerComposeNetworksOverride ] || cat <<EOF > $dockerComposeNetworksOverride
 networks:
-  ${dockerNetworkName}:
+  dev:
     driver: bridge
 
 services:
   dev:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - devcontainer
     ports:
       # Docker daemon
       - 2375
+      # Xpra
+      - 5901
+      # VNC
+      - 5900
 
   example-application-backend:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - example-application-backend
     ports:
@@ -193,12 +204,12 @@ services:
 
   example-application-mobile:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - example-application-mobile
     ports:
       # VNC
-      # - 5900
+      - 5900
       # Xpra
       - 5901
       # ADB
@@ -212,7 +223,7 @@ services:
 
   firebase-emulators:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - firebase-emulators
     ports:
@@ -243,7 +254,7 @@ services:
 
   clarinet-devnet:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - clarinet-devnet
     ports:
@@ -252,7 +263,7 @@ services:
 
   android-studio:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - android-studio
     ports:
@@ -266,7 +277,7 @@ services:
       - 9100
   vault-dev:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - vault-dev
     ports:
@@ -277,12 +288,23 @@ services:
 
   robotframework:
     networks:
-      ${dockerNetworkName}:
+      dev:
         aliases:
           - robotframework
     ports:
       # HTTP
       - 8080
+
+  nestor:
+    networks:
+      dev:
+        aliases:
+          - nestor
+    ports:
+      # Xpra
+      - "5901"
+      # Docker rootless DIND socket
+      - "2976"
 EOF
 
 # Set this file according to the local development environment. The file is gitignored due to the local nature of the configuration.
@@ -290,6 +312,17 @@ EOF
 dockerComposeGpuOverride=${WORKING_DIR:-${PWD}}/.docker-compose-gpu-override.yml
 [ -f $dockerComposeGpuOverride ] || cat <<'EOF' > $dockerComposeGpuOverride
 services:
+
+  dev:
+    environment:
+      VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE: wayland
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
+    runtime: nvidia
+    devices:
+      - /dev/nvidia0
+    shm_size: "8gb"
+
   android-studio:
     environment:
       VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE: wayland
@@ -299,13 +332,25 @@ services:
     devices:
       - /dev/nvidia0
     shm_size: "8gb"
+
   example-application-mobile:
     environment:
-     LOCAL_ANDROID_GPU_MODE: host
+      VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE: wayland
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
     runtime: nvidia
     devices:
       - /dev/nvidia0
     shm_size: "8gb"
 
+  nestor:    
+    environment:
+      VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE: wayland
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
+    runtime: nvidia
+    devices:
+      - /dev/nvidia0
+    shm_size: "8gb"
 EOF
 

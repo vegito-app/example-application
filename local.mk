@@ -1,81 +1,250 @@
+export LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME  ?= $(VEGITO_DOCKER_PUBLIC_REPOSITORY)/vegito-local
 
-# ------------------------------------------
-# Subtree ./local
-# ___________________________________________
-#
-# This section manages the local subtree, which contains local development tools and configurations.
-# It allows for pulling and pushing changes to a separate local repository.
-#------------------------------------------
-git-subtree-local-pull:
-	@echo "⬇︎ Pulling the local subtree..."
-	@git subtree pull --prefix local \
-	  git@github.com:vegito-app/local.git main --squash
-	@echo "Local subtree pulled successfully."
-.PHONY: git-subtree-local-pull
+export LOCAL_BUILDER_IMAGE ?= $(VEGITO_EXAMPLE_APPLICATION_BUILDER_IMAGES_BASE)-latest
 
-git-subtree-local-push:
-	@echo "⬆︎ Pushing changes from the local subtree..."
-	@git subtree push --prefix local \
-	  git@github.com:vegito-app/local.git $(VEGITO_APP_GIT_SUBTREE_REMOTE_BRANCH)
-	@echo "Local subtree pushed successfully."
-.PHONY: git-subtree-local-push
-# ------------------------------------------
-# Version of the vegito-app/local development environment images to use:
-export LOCAL_VERSION ?= v1.29.5
+export LOCAL_DIR ?= $(CURDIR)
 
-LOCAL_ROBOTFRAMEWORK_IMAGE_VERSION ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):robotframework-$(LOCAL_VERSION)
-LOCAL_TRIVY_IMAGE_VERSION ?= $(LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME):trivy-$(LOCAL_VERSION)
-LOCAL_DIR ?= $(CURDIR)/local
+LOCAL_ANDROID_DIR        ?= $(LOCAL_DIR)/android
+LOCAL_GITHUB_ACTIONS_DIR ?= $(LOCAL_DIR)/github-actions
+LOCAL_ROBOTFRAMEWORK_DIR ?= $(LOCAL_DIR)/robotframework
+LOCAL_STRIPE_DIR         ?= $(LOCAL_DIR)/stripe
+LOCAL_TRIVY_DIR          ?= $(LOCAL_DIR)/trivy
+LOCAL_VAULT_DEV_DIR      ?= $(LOCAL_DIR)/vault-dev
 
-LOCAL_GO_MODULES ?= \
-	$(LOCAL_FIREBASE_EMULATORS_AUTH_FUNCTIONS_DIR) \
-	proxy \
-	$(VEGITO_EXAMPLE_APPLICATION_BACKEND_DIR)
+LOCAL_DOTENV_FILE ?= .env
 
-LOCAL_GO_MODULES = \
+local-dotenv: $(LOCAL_DOTENV_FILE)
+.PHONY: local-dotenv
 
-LOCAL_ROBOTFRAMEWORK_TESTS_DIR ?= $(VEGITO_EXAMPLE_APPLICATION_TESTS_DIR)
+$(LOCAL_DOTENV_FILE):
+	@echo "📝 Generating .env file for local development..."
+	@$(LOCAL_DIR)/dotenv.sh
 
-export VEGITO_DOCKER_PUBLIC_IMAGES_VERSION ?= v0.0.13
-export LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REPOSITORY)/vegito-local
+local-docker-images-pull-parallel: \
+local-docker-compose-images-pull-parallel \
+local-android-docker-images-pull-parallel
+.PHONY: local-docker-images-pull-parallel
 
-export LOCAL_DOCKER_PUBLIC_IMAGES_BASE_NAME ?= $(VEGITO_DOCKER_PUBLIC_REGISTRY)/vegito-local
-export LOCAL_BUILDER_IMAGE_VERSION ?= $(VEGITO_DOCKER_PUBLIC_IMAGES_BASE_NAME):trixie-debian-project-golang-docker-$(VEGITO_DOCKER_PUBLIC_IMAGES_VERSION)
-
-LOCAL_DOCKER_BUILDX_BAKE ?= docker buildx bake \
-	--allow=fs.read=.. \
+LOCAL_DOCKER_BUILDX_BAKE ?= docker buildx bake --progress=plain \
 	-f $(LOCAL_DIR)/docker-bake.hcl \
-	-f $(LOCAL_DIR)/robotframework/docker-bake.hcl \
-	$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_DIR)/%/docker-bake.hcl) \
-	-f $(LOCAL_ANDROID_DIR)/docker-bake.hcl \
+	-f $(LOCAL_DIR)/android/docker-bake.hcl \
 	$(LOCAL_ANDROID_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_ANDROID_DIR)/%/docker-bake.hcl) \
-	-f $(CURDIR)/docker-bake.hcl \
-	-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/docker-bake.hcl \
-	$(EXAMPLE_APPLICATION_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(VEGITO_EXAMPLE_APPLICATION_DIR)/%/docker-bake.hcl) \
+	$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=-f $(LOCAL_DIR)/%/docker-bake.hcl) \
 	-f $(LOCAL_DIR)/github-actions/docker-bake.hcl
 
-export LOCAL_DOCKER_COMPOSE ?= docker compose \
-    -f $(CURDIR)/docker-compose.yml \
-    -f $(LOCAL_DIR)/docker-compose.yml \
-    -f $(LOCAL_DIR)/trivy/docker-compose.yml \
-    -f $(CURDIR)/.docker-compose-services-override.yml \
-    -f $(CURDIR)/.docker-compose-networks-override.yml \
-    -f $(CURDIR)/.docker-compose-gpu-override.yml
+$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=local-%-image): vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%-image=%) 2>&1 | tee $@.make-logs
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --load $(@:%-image=%) 2>&1 | tee -a $@.make-logs
+.PHONY: $(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=local-%-image)
 
-LOCAL_ANDROID_DOCKER_COMPOSE_SERVICES = \
-  studio
+$(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=local-%-image-ci): vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print $(@:%-image-ci=%-ci)
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push $(@:%-image-ci=%-ci)
+.PHONY: $(LOCAL_DOCKER_BUILDX_BAKE_IMAGES:%=local-%-image-ci)
+
+local-desktop-x-image: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-desktop-x 2>&1 | tee $@.make-logs
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --load local-desktop-x 2>&1 | tee -a $@.make-logs
+.PHONY: local-desktop-x-image
+
+local-desktop-x-image-ci: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-desktop-x-ci
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push local-desktop-x-ci
+.PHONY: local-desktop-x-image-ci
+
+local-project-builders-image: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-project-builders 2>&1 | tee $@.make-logs
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --load local-project-builders 2>&1 | tee -a $@.make-logs
+.PHONY: local-project-builders-image
+
+local-project-builders-image-ci: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-project-builders-ci
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push local-project-builders-ci
+.PHONY: local-project-builders-image-ci
+
+local-project-builder-image: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-project-builder 2>&1 | tee $@.make-logs
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --load local-project-builder 2>&1 | tee -a $@.make-logs
+.PHONY: local-project-builder-image
+
+local-project-builder-image-ci: vegito-docker-buildx-setup
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --print local-project-builder-ci
+	@$(LOCAL_DOCKER_BUILDX_BAKE) --push local-project-builder-ci
+.PHONY: local-project-builder-image-ci
+
+local-gcloud-builder-image-delete:
+	@echo "🗑️  Deleting builder image $(LOCAL_BUILDER_IMAGE)..."
+	@$(GCLOUD) container images delete --force-delete-tags $(LOCAL_BUILDER_IMAGE)
+.PHONY: local-gcloud-builder-image-delete
+
+local-project-builder-image-trivy-scan: vegito-docker-buildx-setup
+	@echo "Running Trivy scan for image: $(LOCAL_BUILDER_IMAGE)""
+	@echo "	🗒️ Report: local-project-builder-$(VERSION)-trivy-report.html"
+	@$(MAKE) local-trivy-image-scan \
+	  LOCAL_TRIVY_IMAGE_SCAN_INPUT=$(LOCAL_BUILDER_IMAGE) \
+	  LOCAL_TRIVY_IMAGE_SCAN_OUTPUT_REPORT_HTML=local-project-builder-$(VERSION)-trivy-report.html
+.PHONY: local-project-builder-image-trivy-scan
+
+ifeq ($(VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE),wayland)
+	LOCAL_DOCKER_COMPOSE += -f $(LOCAL_DIR)/.docker-compose-gpu-override.yml
+endif
+ifeq ($(VEGITO_DOCKER_DEBIAN_DESKTOP_X_GPU_MODE),host)
+	LOCAL_DOCKER_COMPOSE += -f $(LOCAL_DIR)/.docker-compose-gpu-override.yml
+endif
 
 LOCAL_DOCKER_COMPOSE_SERVICES ?= \
+  clarinet-devnet \
   firebase-emulators \
+  vault-dev \
   robotframework \
-#   vault-dev \
-#   trivy
-#   clarinet-devnet \
+  trivy \
+  stripe
 
--include $(LOCAL_DIR)/local.mk
--include $(LOCAL_DIR)/android.mk
--include $(LOCAL_DIR)/docker.mk
+local-docker-images-pull: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull) local-dev-container-image-pull
+.PHONY: local-docker-images-pull
 
-VEGITO_GCLOUD_DIR ?= $(LOCAL_DIR)/gcloud
--include $(VEGITO_GCLOUD_DIR)/gcloud.mk
-# ----------------------------------------------------------
+local-docker-compose-images-pull: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull)
+.PHONY: local-docker-compose-images-pull
+
+local-docker-compose-images-pull-parallel: 
+	@echo "⬇︎ Pulling all local docker compose images..."
+	@$(MAKE) -j local-docker-compose-images-pull
+.PHONY: local-docker-compose-images-pull-parallel
+
+local-docker-compose-images-pull: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull)
+.PHONY: local-docker-compose-images-pull
+
+local-docker-compose-images-push: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-push) local-dev-container-image-push
+.PHONY: local-docker-compose-images-push
+
+local-docker-compose-network-rm-dev: 
+	@echo "🗑️  Removing the docker network used"
+	@-docker network rm $(COMPOSE_PROJECT_NAME)_dev
+.PHONY: local-docker-compose-network-rm-dev
+
+local-dev-images-pull: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull)
+.PHONY: local-dev-images-pull
+
+local-containers-up: $(LOCAL_DOCKER_COMPOSE_SERVICES)
+.PHONY: local-containers-up
+
+local-containers-rm: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-rm)
+.PHONY: local-containers-rm
+
+local-containers-logs: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-logs)
+.PHONY: local-containers-logs
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull):
+	@echo "⬇︎ Pulling image for $(@:local-%-image-pull=%)..."
+	@$(LOCAL_DOCKER_COMPOSE) pull $(@:local-%-image-pull=%)
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-image-pull)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES):
+	@echo "⬆︎ Bringing up container for $(@:%=%)..."
+	@$(MAKE) $(@:%=local-%-container-up)
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-rm): 
+	@echo "🗑️  Removing container for $(@:local-%-container-rm=%)..."
+	@$(MAKE) $(@:%-rm=%-stop)
+	@$(LOCAL_DOCKER_COMPOSE) rm -f $(@:local-%-container-rm=%)
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-rm)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-start):
+	@echo "▶️ Starting $(@:local-%-container-start=%)..."
+	@-$(LOCAL_DOCKER_COMPOSE) start $(@:local-%-container-start=%) 2>/dev/null
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-start)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-stop):
+	@echo "🛑 Stopping $(@:local-%-container-stop=%)..."
+	@-$(LOCAL_DOCKER_COMPOSE) stop $(@:local-%-container-stop=%) 2>/dev/null
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-stop)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-logs):
+	@echo "🗒️ Showing logs for $(@:local-%-container-logs=%)..."
+	@$(LOCAL_DOCKER_COMPOSE) logs $(@:local-%-container-logs=%)
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-logs)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-logs-f):
+	@echo "📝 Following logs for $(@:local-%-container-logs-f=%)..."
+	@$(LOCAL_DOCKER_COMPOSE) logs --follow $(@:local-%-container-logs-f=%)
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-logs-f)
+
+$(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-sh):
+	@echo "💻 Opening bash shell for $(@:local-%-container-sh=%)..."
+	@$(LOCAL_DOCKER_COMPOSE) exec $(@:local-%-container-sh=%) bash
+.PHONY: $(LOCAL_DOCKER_COMPOSE_SERVICES:%=local-%-container-sh)
+
+local-dev-container:
+	@echo "⬆︎ Bringing up dev container..."
+	@$(LOCAL_DOCKER_COMPOSE) up -d --remove-orphans dev
+.PHONY: local-dev-container
+
+local-dev-container-rm:
+	@$(LOCAL_DOCKER_COMPOSE) rm -s -f dev
+.PHONY: local-dev-container-rm
+
+local-dev-container-sh:
+	@$(LOCAL_DOCKER_COMPOSE) exec dev bash
+.PHONY: local-dev-container-sh
+
+# Local Docker Compose configuration
+local-container-config-show:
+	@echo "📦 Showing container configuration..."
+	@$(LOCAL_DOCKER_COMPOSE) config
+.PHONY: local-container-config-show
+
+local-dev-container-image-pull:
+	@echo "⬇︎ Pulling builder image..."
+	@$(LOCAL_DOCKER_COMPOSE) config dev | grep 'image:'
+	@$(LOCAL_DOCKER_COMPOSE) pull dev
+.PHONY: local-dev-container-image-pull
+
+local-dev-container-image-push:
+	@echo "⬆︎ Pushing builder image..."
+	@$(LOCAL_DOCKER_COMPOSE) push dev
+.PHONY: local-dev-container-image-push
+
+local-dev-container-logs:
+	@echo "🗒️ Showing logs for dev container..."
+	@$(LOCAL_DOCKER_COMPOSE) logs dev
+.PHONY: local-dev-container-logs
+
+local-dev-container-logs-f:
+	@echo "📝 Following logs for dev container..."
+	@$(LOCAL_DOCKER_COMPOSE) logs -f dev
+.PHONY: local-dev-container-logs-f
+
+# Local Docker Compose Services for CI
+LOCAL_DOCKER_COMPOSE_SERVICES_CI ?= \
+  robotframework \
+#   clarinet-devnet
+
+LOCAL_DEV_CONTAINER_DOCKER_COMPOSE_NAME = dev
+
+# Use this to run commands in the dev container	in CI
+LOCAL_DEV_CONTAINER_RUN_CI = \
+  LOCAL_CONTAINER_INSTALL=false \
+  $(LOCAL_DOCKER_COMPOSE) run --rm \
+  $(LOCAL_DEV_CONTAINER_DOCKER_COMPOSE_NAME)
+
+LOCAL_CONTAINERS_OPERATIONS_CI = up rm logs
+
+$(LOCAL_CONTAINERS_OPERATIONS_CI:%=local-containers-%-ci): local-dev-container-image-pull
+	@echo "Running operation 'local-containers-$(@:local-containers-%-ci=%)' for all local containers in CI..."
+	@echo "Using builder image: $(LOCAL_BUILDER_IMAGE)"
+	@$(LOCAL_DEV_CONTAINER_RUN_CI) \
+	    make local-containers-$(@:local-containers-%-ci=%) \
+	      GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
+	      INFRA_ENV=$(INFRA_ENV) \
+	      LOCAL_DOCKER_COMPOSE_SERVICES="$(LOCAL_DOCKER_COMPOSE_SERVICES_CI)" 
+.PHONY: $(LOCAL_CONTAINERS_OPERATIONS_CI:%=local-containers-%-ci)
+
+-include $(LOCAL_DIR)/android/android.mk
+-include $(LOCAL_DIR)/clarinet-devnet/clarinet-devnet.mk
+-include $(LOCAL_DIR)/github-actions/github-actions.mk
+-include $(LOCAL_DIR)/firebase-emulators/firebase-emulators.mk
+-include $(LOCAL_DIR)/vault-dev/vault-dev.mk
+-include $(LOCAL_DIR)/robotframework/robotframework.mk
+-include $(LOCAL_DIR)/stripe/stripe.mk
+-include $(LOCAL_DIR)/trivy/trivy.mk
