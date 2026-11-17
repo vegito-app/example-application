@@ -75,6 +75,9 @@ LOCAL_DOCKER_COMPOSE_SERVICES ?= \
 -include $(LOCAL_DIR)/local.mk
 -include $(LOCAL_DIR)/android.mk
 -include $(LOCAL_DIR)/docker.mk
+-include $(LOCAL_DIR)/android/android.mk
+-include $(LOCAL_DIR)/firebase-emulators/firebase-emulators.mk
+-include $(LOCAL_DIR)/clarinet-devnet/clarinet-devnet.mk
 
 VEGITO_GCLOUD_DIR ?= $(LOCAL_DIR)/gcloud
 -include $(VEGITO_GCLOUD_DIR)/gcloud.mk
