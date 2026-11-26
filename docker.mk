@@ -1,4 +1,4 @@
-export VEGITO_DOCKER_PUBLIC_IMAGES_VERSION ?= v0.0.24
+export VEGITO_DOCKER_PUBLIC_IMAGES_VERSION ?= v0.0.27
 
 # Google Cloud Registry (GCR) configuration
 GOOGLE_CLOUD_DOCKER_REGISTRY ?= $(GOOGLE_CLOUD_REGION)-docker.pkg.devs
@@ -160,8 +160,8 @@ vegito-docker-images-release-ci:
 .PHONY: vegito-docker-images-release-ci
 
 export VEGITO_DOCKER_BUILDX_NAME                 ?= vegito-project-builder
-export VEGITO_DOCKER_BUILDX_ARM_BUILDER_NAME     ?= mac-arm
-export VEGITO_DOCKER_BUILDX_ARM_BUILDER_ENDPOINT ?= tcp://10.6.6.3:23751
+export VEGITO_DOCKER_BUILDX_ARM_BUILDER_NAME     ?= $(VEGITO_DOCKER_BUILDX_NAME)-arm
+export VEGITO_DOCKER_BUILDX_ARM_BUILDER_ENDPOINT ?= tcp://arm-builder:2375
 
 # Ajout d'un context docker distant pour le Mac
 vegito-docker-context-arm:
